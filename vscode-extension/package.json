@@ -1,0 +1,37 @@
+{
+	"name": "todo-list-for-teams",
+	"displayName": "Todo List for Teams",
+	"description": "View TODO list of yours",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.84.0"
+	},
+	"categories": ["Other"],
+	"activationEvents": [],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "todo-list-for-teams.helloWorld",
+				"title": "Hello World"
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "pnpm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"pretest": "pnpm run compile && pnpm run lint",
+		"lint": "biome format --write ./src && eslint src --ext ts",
+		"test": "node ./out/test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/vscode": "^1.84.0",
+		"@types/mocha": "^10.0.3",
+		"@types/node": "18.x",
+		"glob": "^10.3.10",
+		"mocha": "^10.2.0",
+		"typescript": "^5.2.2",
+		"@vscode/test-electron": "^2.3.6"
+	}
+}

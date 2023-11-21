@@ -1,0 +1,17 @@
+{
+	"editor.formatOnSave": true,
+	"editor.tabSize": 2,
+	"[typescript]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[json]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[jsonc]": {
+		"editor.defaultFormatter": "biomejs.biome"
+	},
+	"[rust]": {
+		"editor.defaultFormatter": "rust-lang.rust-analyzer"
+	},
+	"rust-analyzer.rustfmt.extraArgs": ["--config", "tab_spaces=2"]
+}
