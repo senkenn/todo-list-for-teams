@@ -14,4 +14,12 @@ pre-commit:
   commands:
     biome:
       glob: "*.{js,ts,jsx,tsx,json,yml,yaml,css,scss,md}"
-      run: pnpm dlx @biomejs/biome check --apply {staged_files}
+      run: |
+        pnpm biome check --apply {staged_files}
+    cspell:
+      glob: "*"
+      run: |
+         # check file name
+         git diff --name-only --cached | pnpm cspell --no-progress --show-context stdin --cache
+         # check file content
+         pnpm cspell {staged_files} --gitignore --cache --no-progress

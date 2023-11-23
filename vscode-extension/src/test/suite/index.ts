@@ -1,6 +1,6 @@
 import * as path from "path";
-import Mocha from "mocha";
 import { glob } from "glob";
+import Mocha from "mocha";
 
 export async function run(): Promise<void> {
 	// Create the mocha test
@@ -22,7 +22,7 @@ export async function run(): Promise<void> {
 			// Run the mocha test
 			mocha.run((failures) => {
 				if (failures > 0) {
-					e(new Error(`${failures} tests faild.`));
+					e(new Error(`${failures} tests failed.`));
 				} else {
 					c();
 				}

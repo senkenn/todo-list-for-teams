@@ -9,10 +9,11 @@
 	},
 	"scripts": {
 		"format": "pnpm dlx @biomejs/biome format . --write",
-		"lint": "pnpm dlx @biomejs/biome lint .",
-		"precommit": "pnpm format && pnpm lint"
+		"lint": "pnpm dlx @biomejs/biome lint ."
 	},
 	"devDependencies": {
+		"@biomejs/biome": "1.3.3",
+		"cspell": "^8.0.0",
 		"lefthook": "^1.5.3"
 	}
 }

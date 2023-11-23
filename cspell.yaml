@@ -1,0 +1,5 @@
+ignorePaths:
+  - pnpm-lock.yaml
+words:
+  - lefthook
+  - biomejs
