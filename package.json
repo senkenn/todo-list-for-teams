@@ -6,5 +6,13 @@
 		"npm": "please_use_pnpm_instead",
 		"yarn": "please_use_pnpm_instead",
 		"node": ">=18"
+	},
+	"scripts": {
+		"format": "pnpm dlx @biomejs/biome format . --write",
+		"lint": "pnpm dlx @biomejs/biome lint .",
+		"precommit": "pnpm format && pnpm lint"
+	},
+	"devDependencies": {
+		"lefthook": "^1.5.3"
 	}
 }
