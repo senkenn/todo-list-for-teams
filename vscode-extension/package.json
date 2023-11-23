@@ -1,7 +1,7 @@
 {
 	"name": "todo-list-for-teams",
 	"displayName": "Todo List for Teams",
-	"description": "View TODO list of yours",
+	"description": "View Todo list of yours",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.84.0"
