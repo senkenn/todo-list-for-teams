@@ -1,0 +1,8 @@
+services:
+  app:
+    container_name: todo-list-for-teams
+    build: .
+    tty: true
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
