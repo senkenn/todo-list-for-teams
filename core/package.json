@@ -1,6 +1,0 @@
-{
-  "name": "core",
-  "scripts": {
-    "build": "rm -rf ./vscode-extension/core && wasm-pack build --target bundler --out-dir ./vscode-extension/core --release"
-  }
-}

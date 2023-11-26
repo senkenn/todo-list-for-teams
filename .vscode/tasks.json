@@ -5,7 +5,7 @@
 	"tasks": [
 		{
 			"type": "npm",
-			"script": "watch",
+			"script": "-F todo-list-for-teams watch",
 			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
 			"presentation": {

@@ -7,10 +7,6 @@
 		"yarn": "please_use_pnpm_instead",
 		"node": ">=18"
 	},
-	"scripts": {
-		"format": "pnpm dlx @biomejs/biome format . --write",
-		"lint": "pnpm dlx @biomejs/biome lint ."
-	},
 	"devDependencies": {
 		"@biomejs/biome": "1.3.3",
 		"cspell": "^8.0.0",

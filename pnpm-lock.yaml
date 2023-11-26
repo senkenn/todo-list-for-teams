@@ -18,7 +18,9 @@ importers:
         specifier: ^1.5.3
         version: 1.5.3
 
-  vscode-extension:
+  packages/core: {}
+
+  packages/vsce:
     devDependencies:
       '@types/mocha':
         specifier: ^10.0.3
