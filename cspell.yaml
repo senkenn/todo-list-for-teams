@@ -5,8 +5,9 @@ words:
   - bindgen
   - biomejs
   - cdylib
-  - lefthook
-  - keyrings
   - dearmor
+  - keyrings
+  - lefthook
   - nodesource
+  - nodistro
   - quickstart
