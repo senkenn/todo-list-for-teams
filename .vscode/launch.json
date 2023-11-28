@@ -1,7 +1,8 @@
+// A launch configuration that compiles the extension and then opens it inside a new window
+// Use IntelliSense to learn about possible attributes.
+// Hover to view descriptions of existing attributes.
+// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
 {
-	// Use IntelliSense to learn about possible attributes.
-	// Hover to view descriptions of existing attributes.
-	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
 	"version": "0.2.0",
 	"configurations": [
 		{
@@ -12,7 +13,7 @@
 				"--extensionDevelopmentPath=${workspaceFolder}/packages/vsce",
 				"--disable-extensions"
 			],
-			"outFiles": ["${workspaceFolder}/packages/vsce/out/**/*.js"],
+			"outFiles": ["${workspaceFolder}/packages/vsce/dist/**/*.js"],
 			"preLaunchTask": "${defaultBuildTask}"
 		},
 		{
@@ -20,11 +21,11 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}/packages/vsce/",
-				"--extensionTestsPath=${workspaceFolder}/packages/vsce/test/suite/index"
+				"--extensionDevelopmentPath={workspaceFolder}/packages/vsce",
+				"--extensionTestsPath={workspaceFolder}/packages/vsce/dist/test/suite/index"
 			],
-			"outFiles": ["${workspaceFolder}/vsce/out/test/**/*.js"],
-			"preLaunchTask": "${defaultBuildTask}"
+			"outFiles": ["{workspaceFolder}/packages/vsce/dist/**/*.js"],
+			"preLaunchTask": "tasks: watch-tests"
 		}
 	]
 }

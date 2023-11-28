@@ -4,17 +4,36 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"type": "npm",
-			"script": "-F todo-list-for-teams watch",
-			"problemMatcher": "$tsc-watch",
+			"label": "watch",
+			"type": "shell",
+			"command": "pnpm -F vsce watch",
+			"problemMatcher": "$ts-webpack-watch",
 			"isBackground": true,
 			"presentation": {
-				"reveal": "never"
+				"reveal": "never",
+				"group": "watchers"
 			},
 			"group": {
 				"kind": "build",
 				"isDefault": true
 			}
+		},
+		{
+			"label": "watch-tests",
+			"type": "shell",
+			"command": "cd packages/vsce && yarn watch-tests",
+			"problemMatcher": "$tsc-watch",
+			"isBackground": true,
+			"presentation": {
+				"reveal": "never",
+				"group": "watchers"
+			},
+			"group": "build"
+		},
+		{
+			"label": "tasks: watch-tests",
+			"dependsOn": ["watch", "watch-tests"],
+			"problemMatcher": []
 		}
 	]
 }
