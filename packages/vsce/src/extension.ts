@@ -60,7 +60,6 @@ function getInfoOutput(
 				line: Number(output.slice(firstIndex + 1, secondIndex)),
 				// get string after searchWord
 				preview: fullLine.slice(fullLine.match(searchWord)?.index) ?? "",
-				// TODO: default author
 			};
 		}
 
