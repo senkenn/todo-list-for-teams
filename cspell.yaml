@@ -11,5 +11,6 @@ words:
   - nodesource
   - nodistro
   - nosources
+  - objectname
   - quickstart
   - vsix

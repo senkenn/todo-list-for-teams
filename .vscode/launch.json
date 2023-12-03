@@ -14,7 +14,7 @@
 				"--disable-extensions"
 			],
 			"outFiles": ["${workspaceFolder}/packages/vsce/dist/**/*.js"],
-			"preLaunchTask": "${defaultBuildTask}"
+			"preLaunchTask": "watch"
 		},
 		{
 			"name": "Extension Tests",
