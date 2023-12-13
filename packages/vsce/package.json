@@ -7,7 +7,7 @@
 		"vscode": "^1.84.0"
 	},
 	"categories": ["Other"],
-	"activationEvents": [],
+	"activationEvents": ["onStartupFinished"],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"commands": [
@@ -15,7 +15,15 @@
 				"command": "todo-list-for-teams.helloWorld",
 				"title": "Hello World"
 			}
-		]
+		],
+		"views": {
+			"scm": [
+				{
+					"id": "todo-list-for-teams",
+					"name": "Todo List for Teams"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "pnpm run package",
