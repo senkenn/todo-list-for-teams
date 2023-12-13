@@ -1,7 +1,7 @@
 import * as child_process from "child_process";
-import * as vscode from "vscode";
-import * as path from "path";
 import * as fs from "fs";
+import * as path from "path";
+import * as vscode from "vscode";
 
 const log = function <T>(this: { [key: string]: T }) {
 	const key = Object.keys(this)[0];
