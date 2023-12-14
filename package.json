@@ -5,14 +5,54 @@
 		"pnpm": "^8.6.7",
 		"npm": "please_use_pnpm_instead",
 		"yarn": "please_use_pnpm_instead",
-		"node": ">=18"
+		"node": ">=18",
+		"vscode": "^1.84.0"
+	},
+	"publisher": "senken",
+	"displayName": "Todo List for Teams",
+	"description": "View Todo list of yours",
+	"categories": ["Other"],
+	"activationEvents": ["onStartupFinished"],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "todo-list-for-teams.helloWorld",
+				"title": "Hello World"
+			}
+		],
+		"views": {
+			"scm": [
+				{
+					"id": "todo-list-for-teams",
+					"name": "Todo List for Teams"
+				}
+			]
+		}
 	},
 	"scripts": {
+		"vscode:prepublish": "pnpm run package",
+		"compile": "webpack",
+		"watch": "webpack --watch",
+		"package": "webpack --mode production --devtool hidden-source-map",
+		"watch-tests": "tsc -p . -w",
+		"test": "tsc -p . && node ./out/test/runTest.js",
 		"check": "pnpm biome check --apply ."
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.4.0",
+		"@types/glob": "^8.1.0",
+		"@types/mocha": "^10.0.3",
+		"@types/node": "18.x",
+		"@types/vscode": "^1.84.0",
+		"@vscode/test-electron": "^2.3.6",
 		"cspell": "^8.0.0",
-		"lefthook": "^1.5.3"
+		"glob": "^10.3.10",
+		"lefthook": "^1.5.3",
+		"mocha": "^10.2.0",
+		"ts-loader": "^9.5.1",
+		"typescript": "^5.2.2",
+		"webpack": "^5.89.0",
+		"webpack-cli": "^5.1.4"
 	}
 }

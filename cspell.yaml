@@ -1,16 +1,12 @@
 ignorePaths:
   - pnpm-lock.yaml
   - settings.json
+  - extensions.json
 words:
-  - bindgen
   - biomejs
-  - cdylib
-  - dearmor
-  - keyrings
   - lefthook
-  - nodesource
-  - nodistro
   - nosources
   - objectname
   - quickstart
+  - senken
   - vsix

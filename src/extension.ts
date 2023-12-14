@@ -11,7 +11,7 @@ const log = function <T>(this: { [key: string]: T }) {
 
 export function activate(context: vscode.ExtensionContext) {
 	// const rootPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-	const rootPath = "~/personal/vsce-base";
+	const rootPath = "/home/senken/personal/vsce-base/todo-list-for-teams";
 	log.call({ rootPath });
 	if (!rootPath) {
 		return;
@@ -23,7 +23,6 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 	vscode.window.createTreeView("todo-list-for-teams", {
 		treeDataProvider: new TodoListProvider(rootPath as string),
-
 		// showCollapseAll: true,
 	});
 
@@ -234,11 +233,6 @@ class Dependency extends vscode.TreeItem {
 		this.tooltip = `${this.label}-${this.version}`;
 		this.description = this.version;
 	}
-
-	iconPath = {
-		light: path.join("sample.png"),
-		dark: path.join("sample.png"),
-	};
 }
 
 export function deactivate() {}

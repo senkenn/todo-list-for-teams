@@ -20,9 +20,5 @@
 	},
 	"[yaml]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	},
-	"[rust]": {
-		"editor.defaultFormatter": "rust-lang.rust-analyzer"
-	},
-	"rust-analyzer.rustfmt.extraArgs": ["--config", "tab_spaces=2"]
+	}
 }

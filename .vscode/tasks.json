@@ -5,8 +5,8 @@
 	"tasks": [
 		{
 			"label": "watch",
-			"type": "shell",
-			"command": "pnpm -F vsce watch",
+			"type": "npm",
+			"script": "watch",
 			"problemMatcher": "$ts-webpack-watch",
 			"isBackground": true,
 			"presentation": {
@@ -21,7 +21,7 @@
 		{
 			"label": "watch-tests",
 			"type": "shell",
-			"command": "cd packages/vsce && yarn watch-tests",
+			"command": "pnpm watch-tests",
 			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
 			"presentation": {

@@ -10,10 +10,10 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
-				"--extensionDevelopmentPath=${workspaceFolder}/packages/vsce",
+				"--extensionDevelopmentPath=${workspaceFolder}",
 				"--disable-extensions"
 			],
-			"outFiles": ["${workspaceFolder}/packages/vsce/dist/**/*.js"],
+			"outFiles": ["${workspaceFolder}/out/**/*.js"],
 			"preLaunchTask": "watch"
 		},
 		{
@@ -21,10 +21,10 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
-				"--extensionDevelopmentPath={workspaceFolder}/packages/vsce",
-				"--extensionTestsPath={workspaceFolder}/packages/vsce/dist/test/suite/index"
+				"--extensionDevelopmentPath={workspaceFolder}",
+				"--extensionTestsPath={workspaceFolder}/out/test/suite/index"
 			],
-			"outFiles": ["{workspaceFolder}/packages/vsce/dist/**/*.js"],
+			"outFiles": ["{workspaceFolder}/out/**/*.js"],
 			"preLaunchTask": "tasks: watch-tests"
 		}
 	]

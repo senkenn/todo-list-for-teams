@@ -1,6 +1,0 @@
-{
-	"name": "core",
-	"scripts": {
-		"build": "rm -rf ../vsce/core && wasm-pack build --target bundler --out-dir ../vsce/core --release"
-	}
-}
