@@ -17,8 +17,8 @@
 	"contributes": {
 		"commands": [
 			{
-				"command": "todo-list-for-teams.helloWorld",
-				"title": "Hello World"
+				"command": "todo-list-for-teams.refresh",
+				"title": "Todo List For Teams: Refresh"
 			}
 		],
 		"views": {
@@ -26,6 +26,15 @@
 				{
 					"id": "todo-list-for-teams",
 					"name": "Todo List for Teams"
+				}
+			]
+		},
+		"menus": {
+			"view/title": [
+				{
+					"command": "todo-list-for-teams.refresh",
+					"when": "view == todo-list-for-teams",
+					"group": "navigation"
 				}
 			]
 		}
@@ -40,10 +49,10 @@
 		"check": "pnpm biome check --apply ."
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.4.1",
+		"@biomejs/biome": "^1.4.1",
 		"@types/glob": "^8.1.0",
 		"@types/mocha": "^10.0.3",
-		"@types/node": "18.x",
+		"@types/node": "^18.0.0",
 		"@types/vscode": "^1.84.0",
 		"@vscode/test-electron": "^2.3.6",
 		"cspell": "^8.0.0",
