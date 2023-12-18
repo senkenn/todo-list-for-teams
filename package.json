@@ -19,6 +19,10 @@
 			{
 				"command": "todo-list-for-teams.refresh",
 				"title": "Todo List For Teams: Refresh"
+			},
+			{
+				"command": "todo-list-for-teams.openFile",
+				"title": "Todo List For Teams: Open File"
 			}
 		],
 		"views": {

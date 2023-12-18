@@ -32,19 +32,24 @@ export function activate(context: vscode.ExtensionContext) {
 	vscode.window.createTreeView("todo-list-for-teams", {
 		treeDataProvider: todoListProvider,
 	});
-	vscode.commands.registerCommand("nodeDependencies.refreshEntry", () =>
-		todoListProvider.refresh(),
-	);
+
 	context.workspaceState.update("todoList", todoList);
 
-	const disposable = vscode.commands.registerCommand(
-		"todo-list-for-teams.refresh",
-		async () => {
-			todoListProvider.refresh();
-		},
-	);
+	const disposables = [
+		vscode.commands.registerCommand("todo-list-for-teams.refresh", () =>
+			todoListProvider.refresh(),
+		),
+		vscode.commands.registerCommand(
+			"todo-list-for-teams.openFile",
+			({ fileAbsPath, selection }: CommandOpenFile) => {
+				vscode.window.showTextDocument(vscode.Uri.file(fileAbsPath), {
+					selection,
+				});
+			},
+		),
+	];
 
-	context.subscriptions.push(disposable);
+	context.subscriptions.push(...disposables);
 }
 
 const searchWordGit = /TODO:\|HACK:/;
@@ -54,6 +59,7 @@ type UnCommitTodoList = {
 	prefix: string;
 	sourcePath: string;
 	line: number;
+	character: number;
 	preview: string;
 	isPreview: boolean;
 }[];
@@ -78,6 +84,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 		private workspaceRoot: string,
 		private workspaceState: vscode.ExtensionContext["workspaceState"],
 	) {
+		// get current branch
 		const stdout = child_process
 			.execSync(`cd ${this.workspaceRoot} && git branch --show-current`)
 			.toString();
@@ -100,7 +107,12 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 			| CommittedTodoList
 			| undefined;
 		if (!allTodoList) {
-			return [new TodoTreeItem("No todo comments.")];
+			return [
+				new TodoTreeItem(
+					"No todo comments.",
+					vscode.TreeItemCollapsibleState.None,
+				),
+			];
 		}
 
 		if (isFirstViewElement) {
@@ -118,7 +130,15 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 			.filter((todo) => todo.prefix === element.label);
 		log.call({ specifiedTodoList });
 		return specifiedTodoList.map((todo) => {
-			return new TodoTreeItem(todo.preview);
+			return new TodoTreeItem(
+				todo.preview,
+				vscode.TreeItemCollapsibleState.None,
+				{
+					fileAbsPath: `${this.workspaceRoot}/${todo.sourcePath}`,
+					line: todo.line,
+					character: todo.character,
+				},
+			);
 		});
 	}
 
@@ -177,13 +197,14 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 			const thirdIndex = output.indexOf(":", secondIndex + 1);
 			const fullLine = output.slice(thirdIndex + 1);
 			const matchedWord = fullLine.match(searchWordTS);
-			if (!matchedWord) {
+			if (!matchedWord?.index) {
 				throw new ShouldHaveBeenIncludedSearchWordError(output);
 			}
 			const prefix = matchedWord[0].slice(0, -1);
 			const branch = output.slice(0, firstIndex);
 			const sourcePath = output.slice(firstIndex + 1, secondIndex);
 			const line = Number(output.slice(secondIndex + 1, thirdIndex));
+			const character = matchedWord.index;
 			const preview = fullLine.slice(matchedWord.index);
 
 			const cmd = `cd ${this.workspaceRoot} && git blame ${branch} -L ${line},${line} ${sourcePath}`;
@@ -198,6 +219,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 				branch,
 				sourcePath,
 				line,
+				character,
 				preview,
 				isPreview: true,
 				commitHash,
@@ -209,11 +231,46 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 }
 
 class TodoTreeItem extends vscode.TreeItem {
+	public command?: vscode.Command;
 	constructor(
 		public readonly label: string,
-		public readonly collapsibleState?: vscode.TreeItemCollapsibleState,
+		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+		private readonly openFileConfig?: {
+			fileAbsPath: string;
+			line: number;
+			character: number;
+		},
 	) {
 		super(label, collapsibleState);
+		this.resourceUri = vscode.Uri.file(label);
+
+		if (!openFileConfig) {
+			return;
+		}
+
+		const { fileAbsPath, line, character } = openFileConfig;
+		const zeroBasedLine = line - 1;
+		this.command = {
+			command: "todo-list-for-teams.openFile",
+			title: "Todo List For Teams: Open File", // TODO: get from package.json
+			arguments: [
+				{
+					fileAbsPath,
+					selection: new vscode.Range(
+						zeroBasedLine,
+						character,
+						zeroBasedLine,
+						character,
+					),
+				} satisfies CommandOpenFile,
+			],
+		};
 	}
 }
+
+type CommandOpenFile = {
+	fileAbsPath: string;
+	selection: vscode.Range;
+};
+
 export function deactivate() {}
