@@ -2,9 +2,11 @@ import * as child_process from "child_process";
 import * as vscode from "vscode";
 
 const log = function <T>(this: { [key: string]: T }) {
-	const key = Object.keys(this)[0];
-	const value = this[key];
-	console.log(`${key}: ${JSON.stringify(value, null, 2)}`);
+	const keys = Object.keys(this);
+	for (const key of keys) {
+		const value = this[key];
+		console.log(`${key}: ${JSON.stringify(value, null, 2)}`);
+	}
 };
 
 export function activate(context: vscode.ExtensionContext) {
@@ -19,11 +21,6 @@ export function activate(context: vscode.ExtensionContext) {
 		context.workspaceState,
 	);
 
-	const todoList = [
-		// ...todoListProvider.getUnCommitTodoList(),
-		...todoListProvider.getCommittedTodoList(),
-	];
-
 	// TODO: Is this needed?
 	vscode.window.registerTreeDataProvider(
 		"todo-list-for-teams",
@@ -33,7 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
 		treeDataProvider: todoListProvider,
 	});
 
-	context.workspaceState.update("todoList", todoList);
+	context.workspaceState.update("todoList", todoListProvider.getTodoList());
 
 	const disposables = [
 		vscode.commands.registerCommand("todo-list-for-teams.refresh", () =>
@@ -55,20 +52,16 @@ export function activate(context: vscode.ExtensionContext) {
 const searchWordGit = /TODO:\|HACK:/;
 const searchWordTS = /TODO:|HACK:/;
 
-type UnCommitTodoList = {
+type TodoList = {
 	prefix: string;
-	sourcePath: string;
+	filePath: string;
 	line: number;
 	character: number;
 	preview: string;
 	isPreview: boolean;
-}[];
-
-type CommittedTodoList = (UnCommitTodoList[0] & {
-	branch: string;
 	commitHash: string;
 	author: string;
-})[];
+}[];
 
 class ShouldHaveBeenIncludedSearchWordError extends Error {
 	constructor(message: string) {
@@ -104,7 +97,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 
 		const prefixes = ["TODO", "HACK", "FIXME"];
 		const allTodoList = (this.workspaceState.get("todoList") || []) as
-			| CommittedTodoList
+			| TodoList
 			| undefined;
 		if (!allTodoList) {
 			return [
@@ -125,16 +118,16 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 			});
 		}
 
-		const specifiedTodoList = allTodoList
-			.filter((todo) => todo.branch === this.currentBranch)
-			.filter((todo) => todo.prefix === element.label);
-		log.call({ specifiedTodoList });
+		const specifiedTodoList = allTodoList.filter(
+			(todo) => todo.prefix === element.label,
+		);
+		// log.call({ specifiedTodoList });
 		return specifiedTodoList.map((todo) => {
 			return new TodoTreeItem(
 				todo.preview,
 				vscode.TreeItemCollapsibleState.None,
 				{
-					fileAbsPath: `${this.workspaceRoot}/${todo.sourcePath}`,
+					fileAbsPath: `${this.workspaceRoot}/${todo.filePath}`,
 					line: todo.line,
 					character: todo.character,
 				},
@@ -153,35 +146,13 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 		console.log("refreshed");
 	}
 
-	getUnCommitTodoList(): UnCommitTodoList {
-		const cmd = `git -C ${this.workspaceRoot} diff \
-								 | grep -E ${searchWordGit.source} | grep '^+' \
-								 || [ $? = 1 ] # if grep return 1, then return 0`;
-		const output = child_process.execSync(cmd).toString();
-
-		// cut last "\n" and split by "\n"
-		const searchResultArray = output.slice(0, -1).split("\n");
-		const unCommitTodoList = searchResultArray.map((output) => {
-			const matchedWord = output.match(searchWordTS);
-			if (!matchedWord) {
-				throw new ShouldHaveBeenIncludedSearchWordError(output);
-			}
-			return {
-				prefix: matchedWord[0].slice(0, -1),
-				sourcePath: output.slice(1),
-				line: 0,
-				preview: "",
-				isPreview: true,
-			};
-		});
-		return unCommitTodoList;
-	}
-
-	getCommittedTodoList(): CommittedTodoList {
-		const cmd = `cd ${this.workspaceRoot} &&
-								 git -c grep.lineNumber=true grep -E ${searchWordGit.source} $(git branch --format='%(objectname) %(refname:short)' \
-								 | sort | uniq -w 40 | cut -c 42-) \
-								 || [ $? = 1 ] # if grep return 1, then return 0`;
+	getTodoList(): TodoList {
+		const cmd = `cd ${this.workspaceRoot} \
+								 && git grep -n -E ${searchWordGit.source} \
+								 | while IFS=: read i j k; do \
+								     echo -n "$i "; \
+									 	 git blame --show-name -L $j,$j $i | cat;
+									 done`;
 		const gitGrepResult = child_process.execSync(cmd).toString();
 		if (gitGrepResult === "") {
 			return [];
@@ -191,33 +162,39 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 		const searchResultArray = gitGrepResult.slice(0, -1).split("\n");
 
 		const committedTodoList = searchResultArray.map((output) => {
-			// tracked file
-			const firstIndex = output.indexOf(":");
-			const secondIndex = output.indexOf(":", firstIndex + 1);
-			const thirdIndex = output.indexOf(":", secondIndex + 1);
-			const fullLine = output.slice(thirdIndex + 1);
-			const matchedWord = fullLine.match(searchWordTS);
+			const filePath = output.split(" ")[0];
+			const afterFilePath = output.substring(filePath.length + " ".length);
+			const commitHash = afterFilePath.split(" ")[0];
+			const afterCommitHash = afterFilePath.substring(
+				filePath.length + " (".length,
+			);
+			const author = afterCommitHash.split(" ")[0];
+			const afterAuthor = afterCommitHash.substring(author.length + " ".length);
+			const matchedWord = afterAuthor.match(searchWordTS);
 			if (!matchedWord?.index) {
 				throw new ShouldHaveBeenIncludedSearchWordError(output);
 			}
 			const prefix = matchedWord[0].slice(0, -1);
-			const branch = output.slice(0, firstIndex);
-			const sourcePath = output.slice(firstIndex + 1, secondIndex);
-			const line = Number(output.slice(secondIndex + 1, thirdIndex));
-			const character = matchedWord.index;
-			const preview = fullLine.slice(matchedWord.index);
-
-			const cmd = `cd ${this.workspaceRoot} && git blame ${branch} -L ${line},${line} ${sourcePath}`;
-			const blameOutput = child_process.execSync(cmd).toString();
-
-			// get commit hash, author
-			const commitHash = blameOutput.slice(0, 8);
-			const author = blameOutput.split(" ")[1].slice(1);
-
+			const getLineResult = output.match(/(\d+)\)/);
+			if (!getLineResult?.[1]) {
+				throw new Error("line is not found");
+			}
+			const line = Number(getLineResult[1]);
+			const afterMatchedWord = afterAuthor.match(/\)\s/);
+			if (!afterMatchedWord?.index) {
+				throw new Error("character is not found");
+			}
+			const previewLine = afterAuthor.slice(
+				afterMatchedWord.index + ") ".length,
+			);
+			const preview = afterAuthor.slice(matchedWord.index);
+			const character = previewLine.match(searchWordTS)?.index;
+			if (character === undefined) {
+				throw new ShouldHaveBeenIncludedSearchWordError(output);
+			}
 			return {
 				prefix,
-				branch,
-				sourcePath,
+				filePath,
 				line,
 				character,
 				preview,
@@ -226,6 +203,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 				author,
 			};
 		});
+		log.call({ committedTodoList });
 		return committedTodoList;
 	}
 }
@@ -242,8 +220,6 @@ class TodoTreeItem extends vscode.TreeItem {
 		},
 	) {
 		super(label, collapsibleState);
-		this.resourceUri = vscode.Uri.file(label);
-
 		if (!openFileConfig) {
 			return;
 		}
