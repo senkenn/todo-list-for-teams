@@ -49,7 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(...disposables);
 }
 
-const searchWordGit = /TODO:\|HACK:/;
+const searchWordShell = /TODO:\|HACK:/;
 const searchWordTS = /TODO:|HACK:/;
 
 type TodoList = {
@@ -143,12 +143,13 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 
 	refresh(): void {
 		this._onDidChangeTreeData.fire(undefined);
+		this.workspaceState.update("todoList", this.getTodoList());
 		console.log("refreshed");
 	}
 
 	getTodoList(): TodoList {
 		const cmd = `cd ${this.workspaceRoot} \
-								 && git grep -n -E ${searchWordGit.source} \
+								 && git grep -n -E ${searchWordShell.source} \
 								 | while IFS=: read i j k; do \
 								     echo -n "$i "; \
 									 	 git blame --show-name -L $j,$j $i | cat;

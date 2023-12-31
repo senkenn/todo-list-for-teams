@@ -18,7 +18,11 @@
 		"commands": [
 			{
 				"command": "todo-list-for-teams.refresh",
-				"title": "Todo List For Teams: Refresh"
+				"title": "Todo List For Teams: Refresh",
+				"icon": {
+					"light": "resources/light/refresh.svg",
+					"dark": "resources/dark/refresh.svg"
+				}
 			},
 			{
 				"command": "todo-list-for-teams.openFile",
