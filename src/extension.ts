@@ -1,5 +1,6 @@
 import * as child_process from "child_process";
 import * as vscode from "vscode";
+import { createHash } from "crypto";
 
 const log = function <T>(this: { [key: string]: T }) {
 	const keys = Object.keys(this);
@@ -30,7 +31,15 @@ export function activate(context: vscode.ExtensionContext) {
 		treeDataProvider: todoListProvider,
 	});
 
-	context.workspaceState.update("todoList", todoListProvider.getTodoList());
+	// TODO: Non git project case
+
+	const workspaceState = new WorkspaceState(context.workspaceState);
+
+	// Must set first
+	workspaceState.update("hiddenItemHashSet", new Set<string>());
+
+	// Must set second
+	workspaceState.update("todoList", todoListProvider.generateTodoList());
 
 	const disposables = [
 		vscode.commands.registerCommand("todo-list-for-teams.refresh", () =>
@@ -44,13 +53,29 @@ export function activate(context: vscode.ExtensionContext) {
 				});
 			},
 		),
+		vscode.commands.registerCommand(
+			"todo-list-for-teams.hideItem",
+			(todoItem: TodoTreeItem) => {
+				if (!todoItem.itemId) {
+					throw new NotSupportedError("Uncommitted item");
+				}
+				const workspaceState = new WorkspaceState(context.workspaceState);
+				workspaceState.update(
+					"hiddenItemHashSet",
+					workspaceState.get("hiddenItemHashSet").add(todoItem.itemId),
+				);
+				log.call({ items: context.workspaceState.get("hiddenItemHashSet") });
+
+				todoListProvider.refresh();
+			},
+		),
 	];
 
 	context.subscriptions.push(...disposables);
 }
 
-const searchWordShell = /TODO:\|HACK:/;
-const searchWordTS = /TODO:|HACK:/;
+const searchWordShell = /TODO:\|HACK:\|NOTE:\|FIXME:/;
+const searchWordTS = /TODO:|HACK:|NOTE:|FIXME:/;
 
 type TodoList = {
 	prefix: string;
@@ -58,16 +83,58 @@ type TodoList = {
 	line: number;
 	character: number;
 	preview: string;
-	isPreview: boolean;
-	commitHash: string;
-	author: string;
+	commitHash?: string;
+	author?: string;
 }[];
 
 class ShouldHaveBeenIncludedSearchWordError extends Error {
 	constructor(message: string) {
-		super(`${ShouldHaveBeenIncludedSearchWordError.name}: ${message}`);
-		this.name = "ShouldHaveBeenIncludedSearchWordError";
+		super(`ShouldHaveBeenIncludedSearchWordError: ${message}`);
 	}
+}
+
+class NotSupportedError extends Error {
+	constructor(nonSupportedSubject: string) {
+		super(`NotSupportedError: ${nonSupportedSubject} is not supported`);
+	}
+}
+type WorkspaceStateKeys = "todoList" | "hiddenItemHashSet";
+
+type WorkspaceStateValueSelector<T extends WorkspaceStateKeys> =
+	T extends "todoList"
+		? TodoList | undefined
+		: T extends "hiddenItemHashSet"
+		  ? Set<string>
+		  : never;
+
+class WorkspaceState {
+	constructor(
+		private workspaceState: vscode.ExtensionContext["workspaceState"],
+	) {
+		this.workspaceState = workspaceState;
+	}
+	public get<T extends WorkspaceStateKeys>(
+		key: T,
+	): WorkspaceStateValueSelector<T> {
+		const getResult = this.workspaceState.get(key);
+		return <WorkspaceStateValueSelector<T>>getResult;
+	}
+	public update<T extends WorkspaceStateKeys>(
+		key: T,
+		value: WorkspaceStateValueSelector<T>,
+	): void {
+		this.workspaceState.update(key, value);
+	}
+}
+
+function createHashFromTodoInfo(
+	commitHash: string,
+	filePath: string,
+	line: number,
+): string {
+	return createHash("md5")
+		.update(`${commitHash}-${filePath}-${line}`)
+		.digest("base64");
 }
 
 export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
@@ -92,13 +159,11 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 	}
 
 	getChildren(element?: TodoTreeItem): TodoTreeItem[] {
-		log.call({ element });
 		const isFirstViewElement = !element;
 
-		const prefixes = ["TODO", "HACK", "FIXME"];
-		const allTodoList = (this.workspaceState.get("todoList") || []) as
-			| TodoList
-			| undefined;
+		const prefixes = ["TODO", "HACK", "NOTE", "FIXME"];
+		const workspaceState = new WorkspaceState(this.workspaceState);
+		const allTodoList = workspaceState.get("todoList");
 		if (!allTodoList) {
 			return [
 				new TodoTreeItem(
@@ -121,8 +186,11 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 		const specifiedTodoList = allTodoList.filter(
 			(todo) => todo.prefix === element.label,
 		);
-		// log.call({ specifiedTodoList });
 		return specifiedTodoList.map((todo) => {
+			const hash: string | undefined =
+				todo.commitHash &&
+				createHashFromTodoInfo(todo.commitHash, todo.filePath, todo.line);
+
 			return new TodoTreeItem(
 				todo.preview,
 				vscode.TreeItemCollapsibleState.None,
@@ -131,6 +199,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 					line: todo.line,
 					character: todo.character,
 				},
+				hash,
 			);
 		});
 	}
@@ -143,69 +212,101 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 
 	refresh(): void {
 		this._onDidChangeTreeData.fire(undefined);
-		this.workspaceState.update("todoList", this.getTodoList());
+		this.workspaceState.update("todoList", this.generateTodoList());
 		console.log("refreshed");
 	}
 
-	getTodoList(): TodoList {
-		const cmd = `cd ${this.workspaceRoot} \
-								 && git grep -n -E ${searchWordShell.source} \
-								 | while IFS=: read i j k; do \
-								     echo -n "$i "; \
-									 	 git blame --show-name -L $j,$j $i | cat;
-									 done`;
-		const gitGrepResult = child_process.execSync(cmd).toString();
-		if (gitGrepResult === "") {
-			return [];
-		}
+	generateTodoList(): TodoList {
+		const grepTrackedFiles = child_process
+			.execSync(`
+				cd ${this.workspaceRoot} \
+				&& git grep -n -E ${searchWordShell.source} \
+				| while IFS=: read i j k; do \
+						echo -n "$i\t"
+						git annotate -L $j,$j "$i" | cat
+					done
+				`)
+			.toString();
+		const grepResultUntrackedFiles = child_process
+			.execSync(`
+				cd ${this.workspaceRoot} \
+		 		&& grep -n -E ${searchWordShell.source} $(git ls-files --others --exclude-standard) 
+				`)
+			.toString();
 
-		// cut last "\n" and split by "\n"
-		const searchResultArray = gitGrepResult.slice(0, -1).split("\n");
+		const trackedTodoList: TodoList =
+			grepTrackedFiles === ""
+				? []
+				: grepTrackedFiles
+						.slice(0, -1) // cut last "\n"
+						.split("\n")
+						.map((output) => {
+							const formattedOutput = output
+								.replace(/\(\s+/, "")
+								.replace(/\)/, "\t");
+							const [filePath, commitHash, author, date, line, fullPreview] =
+								formattedOutput.split("\t");
+							const matchedWord = fullPreview.match(searchWordTS);
+							if (!matchedWord?.index) {
+								throw new ShouldHaveBeenIncludedSearchWordError(output);
+							}
+							const prefix = matchedWord[0].slice(0, -1); // cut last ":"
+							const previewStartedWithPrefix = fullPreview.slice(
+								matchedWord.index,
+							);
+							const character = matchedWord.index;
 
-		const committedTodoList = searchResultArray.map((output) => {
-			const filePath = output.split(" ")[0];
-			const afterFilePath = output.substring(filePath.length + " ".length);
-			const commitHash = afterFilePath.split(" ")[0];
-			const afterCommitHash = afterFilePath.substring(
-				filePath.length + " (".length,
-			);
-			const author = afterCommitHash.split(" ")[0];
-			const afterAuthor = afterCommitHash.substring(author.length + " ".length);
-			const matchedWord = afterAuthor.match(searchWordTS);
-			if (!matchedWord?.index) {
-				throw new ShouldHaveBeenIncludedSearchWordError(output);
-			}
-			const prefix = matchedWord[0].slice(0, -1);
-			const getLineResult = output.match(/(\d+)\)/);
-			if (!getLineResult?.[1]) {
-				throw new Error("line is not found");
-			}
-			const line = Number(getLineResult[1]);
-			const afterMatchedWord = afterAuthor.match(/\)\s/);
-			if (!afterMatchedWord?.index) {
-				throw new Error("character is not found");
-			}
-			const previewLine = afterAuthor.slice(
-				afterMatchedWord.index + ") ".length,
-			);
-			const preview = afterAuthor.slice(matchedWord.index);
-			const character = previewLine.match(searchWordTS)?.index;
-			if (character === undefined) {
-				throw new ShouldHaveBeenIncludedSearchWordError(output);
-			}
-			return {
-				prefix,
-				filePath,
-				line,
-				character,
-				preview,
-				isPreview: true,
-				commitHash,
-				author,
-			};
-		});
-		log.call({ committedTodoList });
-		return committedTodoList;
+							return {
+								prefix,
+								filePath,
+								line: Number(line),
+								character,
+								preview: previewStartedWithPrefix,
+								commitHash,
+								author,
+							};
+						})
+						// Skip if item was already contained in hiddenItemHashSet
+						.filter((todo) => {
+							const hash = createHashFromTodoInfo(
+								todo.commitHash,
+								todo.filePath,
+								Number(todo.line),
+							);
+							const workspaceState = new WorkspaceState(this.workspaceState);
+							const hiddenItemHashSet = workspaceState.get("hiddenItemHashSet");
+							if (hiddenItemHashSet.has(hash)) {
+								return false;
+							}
+							return true;
+						});
+
+		const uncommittedTodoList: TodoList =
+			grepResultUntrackedFiles === ""
+				? []
+				: grepResultUntrackedFiles
+						.slice(0, -1)
+						.split("\n")
+						.map((output) => {
+							const [filePath, line, ...rest] = output.split(":");
+							const matchedWord = rest.join(":").match(searchWordTS);
+							if (!matchedWord?.index || !matchedWord.input) {
+								throw new ShouldHaveBeenIncludedSearchWordError(output);
+							}
+							const prefix = matchedWord[0].slice(0, -1); // cut last ":"
+							const character = matchedWord.index;
+
+							return {
+								prefix,
+								filePath,
+								line: Number(line),
+								character,
+								preview: matchedWord.input?.slice(matchedWord.index),
+							};
+						});
+
+		console.log("generate todo list successfully");
+		return [...trackedTodoList, ...uncommittedTodoList];
 	}
 }
 
@@ -219,11 +320,15 @@ class TodoTreeItem extends vscode.TreeItem {
 			line: number;
 			character: number;
 		},
+		public readonly itemId?: string,
 	) {
 		super(label, collapsibleState);
 		if (!openFileConfig) {
 			return;
 		}
+
+		this.contextValue = "todo-items";
+		this.itemId = itemId;
 
 		const { fileAbsPath, line, character } = openFileConfig;
 		const zeroBasedLine = line - 1;
