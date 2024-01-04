@@ -2,6 +2,7 @@ ignorePaths:
   - pnpm-lock.yaml
   - settings.json
   - extensions.json
+  - "*.svg"
 words:
   - biomejs
   - lefthook
