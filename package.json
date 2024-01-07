@@ -18,19 +18,32 @@
 		"commands": [
 			{
 				"command": "todo-list-for-teams.refresh",
-				"title": "Todo List For Teams: Refresh",
+				"title": "Refresh",
+				"category": "Todo List For Teams",
 				"icon": {
 					"light": "resources/light/refresh.svg",
 					"dark": "resources/dark/refresh.svg"
 				}
 			},
 			{
-				"command": "todo-list-for-teams.openFile",
-				"title": "Todo List For Teams: Open File"
+				"command": "todo-list-for-teams.reset",
+				"title": "Reset Todo List",
+				"category": "Todo List For Teams"
 			},
 			{
-				"command": "todo-list-for-teams.hideItem",
-				"title": "Hide Items"
+				"command": "todo-list-for-teams.openFile",
+				"title": "Open File",
+				"category": "Todo List For Teams"
+			},
+			{
+				"command": "todo-list-for-teams.addToIgnoreList",
+				"title": "Add To Ignore List",
+				"category": "Todo List For Teams"
+			},
+			{
+				"command": "todo-list-for-teams.restoreItem",
+				"title": "Restore Item",
+				"category": "Todo List For Teams"
 			}
 		],
 		"views": {
@@ -51,8 +64,12 @@
 			],
 			"view/item/context": [
 				{
-					"command": "todo-list-for-teams.hideItem",
-					"when": "view == todo-list-for-teams && viewItem == todo-items"
+					"command": "todo-list-for-teams.addToIgnoreList",
+					"when": "view == todo-list-for-teams && viewItem == todo-item"
+				},
+				{
+					"command": "todo-list-for-teams.restoreItem",
+					"when": "view == todo-list-for-teams && viewItem == todo-ignored-item"
 				}
 			]
 		}
