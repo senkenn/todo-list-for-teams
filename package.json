@@ -38,7 +38,8 @@
 			{
 				"command": "todo-list-for-teams.addToIgnoreList",
 				"title": "Add To Ignore List",
-				"category": "Todo List For Teams"
+				"category": "Todo List For Teams",
+				"enablement": "viewItem == committed-item"
 			},
 			{
 				"command": "todo-list-for-teams.restoreItem",
@@ -65,11 +66,11 @@
 			"view/item/context": [
 				{
 					"command": "todo-list-for-teams.addToIgnoreList",
-					"when": "view == todo-list-for-teams && viewItem == todo-item"
+					"when": "view == todo-list-for-teams && (viewItem == committed-item || viewItem == non-committed-item)"
 				},
 				{
 					"command": "todo-list-for-teams.restoreItem",
-					"when": "view == todo-list-for-teams && viewItem == todo-ignored-item"
+					"when": "view == todo-list-for-teams && viewItem == ignored-item"
 				}
 			]
 		}

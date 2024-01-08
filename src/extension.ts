@@ -9,10 +9,32 @@ const log = function <T>(this: { [key: string]: T }) {
 	}
 };
 
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext): void {
 	const rootPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
 	log.call({ rootPath });
 	if (!rootPath) {
+		return;
+	}
+
+	// If git is not installed, show error message with tree view
+	try {
+		child_process.execSync("git --version");
+	} catch (error) {
+		console.warn((error as Buffer).toString());
+		vscode.window.createTreeView("todo-list-for-teams", {
+			treeDataProvider: new TodoListProvider("Git is not installed."),
+		});
+		return;
+	}
+
+	// If git is not initialized, show error message with tree view
+	try {
+		child_process.execSync(`cd ${rootPath} && git status`);
+	} catch (error) {
+		console.warn((error as Buffer).toString());
+		vscode.window.createTreeView("todo-list-for-teams", {
+			treeDataProvider: new TodoListProvider("Not a git repository."),
+		});
 		return;
 	}
 
@@ -22,15 +44,13 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 
 	// TODO: Is this needed?
-	vscode.window.registerTreeDataProvider(
-		"todo-list-for-teams",
-		todoListProvider,
-	);
+	// vscode.window.registerTreeDataProvider(
+	// 	"todo-list-for-teams",
+	// 	todoListProvider,
+	// );
 	vscode.window.createTreeView("todo-list-for-teams", {
 		treeDataProvider: todoListProvider,
 	});
-
-	// TODO: Skip on non git project
 
 	const workspaceState = new TypedWorkspaceState(context.workspaceState);
 	workspaceState.update("todoList", todoListProvider.generateTodoList());
@@ -169,20 +189,19 @@ class TypedWorkspaceState {
 }
 
 export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
-	private currentBranch = "";
+	private contentMessage?: string;
+	private workspaceRoot?: string;
+	private workspaceState?: TypedWorkspaceState;
+	constructor(contentMessage: string);
+	constructor(workspaceRoot: string, workspaceState: TypedWorkspaceState);
+	constructor(...args: unknown[]) {
+		if (args.length === 1) {
+			this.contentMessage = args[0] as string;
+			return;
+		}
 
-	constructor(
-		private workspaceRoot: string,
-		private workspaceState: TypedWorkspaceState,
-	) {
-		// get current branch
-		const stdout = child_process
-			.execSync(`cd ${this.workspaceRoot} && git branch --show-current`)
-			.toString();
-
-		// cut last "\n" and set to currentBranch
-		this.currentBranch = stdout.slice(0, -1);
-		log.call({ currentBranch: this.currentBranch });
+		this.workspaceRoot = args[0] as string;
+		this.workspaceState = args[1] as TypedWorkspaceState;
 	}
 
 	getTreeItem(element: TodoTreeItem): TodoTreeItem {
@@ -190,19 +209,22 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 	}
 
 	getChildren(element?: TodoTreeItem): TodoTreeItem[] {
-		const isFirstViewElement = !element;
-
-		const todoList = this.workspaceState.get("todoList");
-		// TODO: undefinedケースは必要ない？typedWorkspaceStateでかける？
-		if (!todoList) {
+		if (this.contentMessage) {
 			return [
 				new TodoTreeItem(
-					"No todo comments.",
+					this.contentMessage,
 					vscode.TreeItemCollapsibleState.None,
 				),
 			];
 		}
 
+		const todoList = this.workspaceState?.get("todoList");
+		if (!todoList) {
+			throw new Error("todoList is undefined");
+		}
+
+		// Top view
+		const isFirstViewElement = !element;
 		if (isFirstViewElement) {
 			const groups = [...prefixes, "IGNORE LIST"];
 			return groups.map((groupName) => {
@@ -213,21 +235,13 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 			});
 		}
 
-		if (element.label === "IGNORE LIST") {
-			const ignoreList = todoList.filter((todo) => todo.isIgnored === true);
-			log.call({ ignoreList });
-			return ignoreList.map((todo) => {
-				return new TodoTreeItem(
-					todo.preview,
-					vscode.TreeItemCollapsibleState.None,
-					todo,
-				);
-			});
-		}
-
-		const todoListFilteredByGroup = todoList.filter(
-			(todo) => todo.prefix === element.label && todo.isIgnored === false,
-		);
+		// Nested view
+		const todoListFilteredByGroup = todoList.filter((todo) => {
+			if (element.label === "IGNORE LIST") {
+				return todo.isIgnored === true;
+			}
+			return todo.prefix === element.label && todo.isIgnored === false;
+		});
 		return todoListFilteredByGroup.map((todo) => {
 			return new TodoTreeItem(
 				todo.preview,
@@ -271,25 +285,36 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 							const formattedOutput = output
 								.replace(/\(\s*/, "")
 								.replace(/\)/, "\t");
-							const [filePath, commitHash, author, date, lineStr, fullPreview] =
-								formattedOutput.split("\t");
+							const [
+								filePath,
+								commitHashIncludingUncommitted,
+								author,
+								date,
+								lineStr,
+								fullPreview,
+							] = formattedOutput.split("\t");
 							const line = Number(lineStr);
 							const matchedWord = fullPreview.match(searchWordTS);
 							if (!matchedWord?.index) {
 								throw new ShouldHaveBeenIncludedSearchWordError(output);
 							}
 							const prefix = this.getPrefix(matchedWord[0]);
-							const previewStartedWithPrefix = fullPreview.slice(
-								matchedWord.index,
-							);
+							const preview = fullPreview.slice(matchedWord.index);
 							const character = matchedWord.index;
+
+							const nonCommittedHashType = ["Not Committed Yet", "00000000"];
+							const commitHash = nonCommittedHashType.includes(
+								commitHashIncludingUncommitted,
+							)
+								? undefined
+								: commitHashIncludingUncommitted;
 
 							return {
 								prefix,
 								fileAbsPath: `${this.workspaceRoot}/${filePath}`,
 								line,
 								character,
-								preview: previewStartedWithPrefix,
+								preview: preview,
 								isIgnored: false,
 								commitHash,
 								author,
@@ -309,7 +334,6 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 						.slice(0, -1) // cut last "\n"
 						.split("\n")
 						.map((output) => {
-							log.call({ output });
 							// Format: {filePath}:{line}:{fullPreview}
 							const [filePath, line, ...rest] = output.split(":");
 							const matchedWord = rest.join(":").match(searchWordTS);
@@ -343,7 +367,10 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 }
 
 class TodoTreeItem extends vscode.TreeItem {
-	public contextValue?: "todo-item" | "todo-ignored-item";
+	public contextValue?:
+		| "committed-item"
+		| "non-committed-item"
+		| "ignored-item";
 	constructor(
 		public readonly label: string,
 		public readonly collapsibleState: vscode.TreeItemCollapsibleState,
@@ -354,8 +381,11 @@ class TodoTreeItem extends vscode.TreeItem {
 			return;
 		}
 
-		this.contextValue =
-			todoItemMetaData.isIgnored === false ? "todo-item" : "todo-ignored-item";
+		this.contextValue = todoItemMetaData.isIgnored
+			? "ignored-item"
+			: todoItemMetaData.commitHash
+			  ? "committed-item"
+			  : "non-committed-item";
 
 		const { fileAbsPath, line, character } = todoItemMetaData;
 		const zeroBasedLine = line - 1;
