@@ -43,17 +43,19 @@ export function activate(context: vscode.ExtensionContext): void {
 		new TypedWorkspaceState(context.workspaceState),
 	);
 
-	// TODO: Is this needed?
-	// vscode.window.registerTreeDataProvider(
-	// 	"todo-list-for-teams",
-	// 	todoListProvider,
-	// );
 	vscode.window.createTreeView("todo-list-for-teams", {
 		treeDataProvider: todoListProvider,
 	});
 
 	const workspaceState = new TypedWorkspaceState(context.workspaceState);
 	workspaceState.update("todoList", todoListProvider.generateTodoList());
+
+	// Trigger
+	vscode.workspace.onDidChangeTextDocument(() => {
+		console.log("File was changed");
+		workspaceState.update("todoList", todoListProvider.generateTodoList());
+		todoListProvider.refresh();
+	});
 
 	const disposables = [
 		vscode.commands.registerCommand("todo-list-for-teams.refresh", () =>
@@ -67,8 +69,10 @@ export function activate(context: vscode.ExtensionContext): void {
 				"OK",
 			);
 			if (selection === "OK") {
-				// Initialize
-				workspaceState.update("todoList", todoListProvider.generateTodoList());
+				workspaceState.update(
+					"todoList",
+					todoListProvider.generateTodoList(true),
+				);
 				todoListProvider.refresh();
 			}
 		}),
@@ -259,15 +263,20 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 
 	refresh(): void {
 		this._onDidChangeTreeData.fire(undefined);
-		// this.workspaceState.update("todoList", this.generateTodoList());
 		console.log("refreshed");
 	}
 
-	generateTodoList(): TodoList {
+	generateTodoList(isReset = false): TodoList {
+		const ignoredList = isReset
+			? []
+			: this.workspaceState
+					?.get("todoList")
+					?.filter((todo) => todo.isIgnored) || [];
+
 		const grepTrackedFiles = child_process
 			.execSync(`
-				cd ${this.workspaceRoot} \
-				&& git grep -n -E ${searchWordShell.source} \
+				cd ${this.workspaceRoot}
+				git grep -n -E ${searchWordShell.source} \
 				| while IFS=: read i j k; do \
 						echo -n "$i\t"
 						git annotate -L $j,$j "$i" | cat
@@ -293,6 +302,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 								lineStr,
 								fullPreview,
 							] = formattedOutput.split("\t");
+							const fileAbsPath = `${this.workspaceRoot}/${filePath}`;
 							const line = Number(lineStr);
 							const matchedWord = fullPreview.match(searchWordTS);
 							if (!matchedWord?.index) {
@@ -309,13 +319,21 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 								? undefined
 								: commitHashIncludingUncommitted;
 
+							// Ignore if it is included in ignoredList
+							const isIgnored = ignoredList.some(
+								(ignored) =>
+									ignored.commitHash === commitHash &&
+									ignored.fileAbsPath === fileAbsPath &&
+									ignored.line === line,
+							);
+
 							return {
 								prefix,
-								fileAbsPath: `${this.workspaceRoot}/${filePath}`,
+								fileAbsPath,
 								line,
 								character,
-								preview: preview,
-								isIgnored: false,
+								preview,
+								isIgnored,
 								commitHash,
 								author,
 							};
@@ -323,9 +341,12 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 
 		const grepResultUntrackedFiles = child_process
 			.execSync(`
-				cd ${this.workspaceRoot} \
-					&& grep --with-filename -n -E ${searchWordShell.source} $(git ls-files --others --exclude-standard) 
-		    `)
+				cd ${this.workspaceRoot}
+				files=$(git ls-files --others --exclude-standard)
+				if [ -n "$files" ]; then
+					echo "$files" | xargs grep --with-filename -n -E ${searchWordShell.source}
+				fi
+				`)
 			.toString();
 		const untrackedTodoList: TodoList =
 			grepResultUntrackedFiles === ""
