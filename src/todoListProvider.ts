@@ -3,10 +3,10 @@ import * as vscode from "vscode";
 import { ShouldHaveBeenIncludedSearchWordError } from "./error";
 import { log } from "./logger";
 
-const searchWordShell = /TODO:\|HACK:\|NOTE:\|FIXME:/;
-const searchWordTS = /TODO:|HACK:|NOTE:|FIXME:/;
+const searchWordShell = /TODO:\|FIXME:\|HACK:\|NOTE:/;
+const searchWordTS = /TODO:|FIXME:|HACK:|NOTE:/;
 
-const prefixes = ["TODO", "HACK", "NOTE", "FIXME"] as const;
+const prefixes = ["TODO", "FIXME", "HACK", "NOTE"] as const;
 type Prefix = (typeof prefixes)[number];
 type TodoList = {
 	prefix: Prefix;
@@ -137,7 +137,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 							const fileAbsPath = `${this.workspaceRoot}/${filePath}`;
 							const line = Number(lineStr);
 							const matchedWord = fullPreview.match(searchWordTS);
-							if (!matchedWord?.index) {
+							if (matchedWord?.index === undefined) {
 								throw new ShouldHaveBeenIncludedSearchWordError(output);
 							}
 							const prefix = this.getPrefix(matchedWord[0]);
@@ -191,7 +191,12 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 							// Format: {filePath}:{line}:{fullPreview}
 							const [filePath, line, ...rest] = output.split(":");
 							const matchedWord = rest.join(":").match(searchWordTS);
-							if (!matchedWord?.index || !matchedWord.input) {
+							log.call({ rest: rest.join(":") });
+							if (
+								matchedWord?.index === undefined ||
+								matchedWord.input === undefined
+							) {
+								console.log(matchedWord);
 								throw new ShouldHaveBeenIncludedSearchWordError(output);
 							}
 							const prefix = this.getPrefix(matchedWord[0]);
@@ -202,7 +207,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 								fileAbsPath: `${this.workspaceRoot}/${filePath}`,
 								line: Number(line),
 								character,
-								preview: matchedWord.input?.slice(matchedWord.index),
+								preview: matchedWord.input.slice(matchedWord.index),
 								isIgnored: false,
 							};
 						});
