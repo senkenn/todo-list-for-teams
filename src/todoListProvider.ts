@@ -1,5 +1,5 @@
-import * as vscode from "vscode";
 import * as child_process from "child_process";
+import * as vscode from "vscode";
 import { ShouldHaveBeenIncludedSearchWordError } from "./error";
 
 const searchWordShell = /TODO:\|HACK:\|NOTE:\|FIXME:/;
