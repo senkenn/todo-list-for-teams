@@ -1,6 +1,7 @@
 import * as child_process from "child_process";
 import * as vscode from "vscode";
 import { ShouldHaveBeenIncludedSearchWordError } from "./error";
+import { log } from "./logger";
 
 const searchWordShell = /TODO:\|HACK:\|NOTE:\|FIXME:/;
 const searchWordTS = /TODO:|HACK:|NOTE:|FIXME:/;
@@ -186,6 +187,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 						.slice(0, -1) // cut last "\n"
 						.split("\n")
 						.map((output) => {
+							log.call({ output });
 							// Format: {filePath}:{line}:{fullPreview}
 							const [filePath, line, ...rest] = output.split(":");
 							const matchedWord = rest.join(":").match(searchWordTS);

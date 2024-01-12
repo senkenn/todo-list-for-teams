@@ -6,14 +6,7 @@ import {
 	TodoTreeItem,
 	TypedWorkspaceState,
 } from "./todoListProvider";
-
-const log = function <T>(this: { [key: string]: T }) {
-	const keys = Object.keys(this);
-	for (const key of keys) {
-		const value = this[key];
-		console.log(`${key}: ${JSON.stringify(value, null, 2)}`);
-	}
-};
+import { log } from "./logger";
 
 export function activate(context: vscode.ExtensionContext): void {
 	const rootPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
