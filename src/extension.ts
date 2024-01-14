@@ -37,16 +37,20 @@ export function activate(context: vscode.ExtensionContext): void {
 		return;
 	}
 
+	// Initialize workspace state
+	const workspaceState = new TypedWorkspaceState(context.workspaceState);
+	workspaceState.update("todoList", []);
+
+	// Initialize tree view
 	const todoListProvider = new TodoListProvider(
 		rootPath,
 		new TypedWorkspaceState(context.workspaceState),
 	);
-
 	vscode.window.createTreeView("todo-list-for-teams", {
 		treeDataProvider: todoListProvider,
 	});
 
-	const workspaceState = new TypedWorkspaceState(context.workspaceState);
+	// Update workspace state
 	workspaceState.update("todoList", todoListProvider.generateTodoList());
 
 	// Trigger
