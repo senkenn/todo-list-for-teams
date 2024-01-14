@@ -1,12 +1,12 @@
 import * as child_process from "child_process";
 import * as vscode from "vscode";
+import { log } from "./logger";
 import {
 	CommandOpenFile,
 	TodoListProvider,
 	TodoTreeItem,
 	TypedWorkspaceState,
 } from "./todoListProvider";
-import { log } from "./logger";
 
 export function activate(context: vscode.ExtensionContext): void {
 	const rootPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
