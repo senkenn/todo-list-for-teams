@@ -4,9 +4,7 @@ This extension provides Todo List on the source control. You can add todo items 
 
 ![Screen shot](resources/screenshot.png)
 
-It is designed to be used with git.
-
-This was created for the purpose of excluding certain todo items in team development, such as other people's todo items.
+It is designed to be used with git. This was created for the purpose of excluding certain todo items in team development, such as other people's todo items.
 
 ## Features
 
@@ -24,15 +22,11 @@ This was created for the purpose of excluding certain todo items in team develop
 
 - `Todo List for Teams: Reset`: Reset the todo list. This restores all items from the ignore list.
 
-## Future Features
+## TODO
 
-- **Highlighting**
-  - Highlight todo items in the editor.
-  - If you want this feature, please react or comment on [#3](https://github.com/senkenn/todo-list-for-teams/issues/3).
+- [ ] **Highlighting** ([#3](https://github.com/senkenn/todo-list-for-teams/issues/3))
   - Until this one is supported, please use other extensions, such as [TODO Highlight](https://marketplace.visualstudio.com/items?itemName=wayou.vscode-todo-highlight).
-- **Custom Tags**
-  - Allow users to specify custom tags.
-  - If you want this feature, please react or comment on [#4](https://github.com/senkenn/todo-list-for-teams/issues/4).
+- [ ] **Custom Tags** ([#4](https://github.com/senkenn/todo-list-for-teams/issues/4))
 
 ## Contributing
 
