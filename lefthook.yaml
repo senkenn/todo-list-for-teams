@@ -7,7 +7,7 @@ pre-push:
   commands:
     packages-audit:
       tags: security
-      run: pnpm audit
+      run: npm audit
 
 pre-commit:
   parallel: true
@@ -15,11 +15,11 @@ pre-commit:
     biome:
       glob: "*.{js,ts,jsx,tsx,json,yml,yaml,css,scss,md}"
       run: |
-        pnpm biome check --apply {staged_files}
+        npx biome check --apply {staged_files}
     cspell:
       glob: "*"
       run: |
         # check file name
-        git diff --name-only --cached | pnpm cspell --no-progress --show-context stdin --cache
+        git diff --name-only --cached | npx cspell --no-progress --show-context stdin --cache
         # check file content
-        pnpm cspell {staged_files} --gitignore --cache --no-progress
+        npx cspell {staged_files} --gitignore --cache --no-progress

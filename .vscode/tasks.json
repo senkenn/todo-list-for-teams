@@ -21,7 +21,7 @@
 		{
 			"label": "watch-tests",
 			"type": "shell",
-			"command": "pnpm watch-tests",
+			"command": "npm watch-tests",
 			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
 			"presentation": {

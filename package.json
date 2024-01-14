@@ -1,14 +1,14 @@
 {
 	"name": "todo-list-for-teams",
-	"version": "1.0.0",
+	"version": "0.0.1",
 	"engines": {
-		"pnpm": "^8.6.7",
-		"npm": "please_use_pnpm_instead",
-		"yarn": "please_use_pnpm_instead",
+		"pnpm": "please_use_npm_instead",
+		"npm": ">=9.3.1",
+		"yarn": "please_use_npm_instead",
 		"node": ">=18",
 		"vscode": "^1.84.0"
 	},
-	"publisher": "senken",
+	"publisher": "SENKEN",
 	"displayName": "Todo List for Teams",
 	"description": "View Todo list of yours",
 	"categories": ["Other"],
@@ -79,13 +79,13 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "pnpm run package",
+		"vscode:prepublish": "npm run package",
 		"compile": "webpack",
 		"watch": "webpack --watch",
 		"package": "webpack --mode production --devtool hidden-source-map",
 		"watch-tests": "tsc -p . -w",
 		"test": "tsc -p . && node ./out/test/runTest.js",
-		"check": "pnpm biome check --apply ."
+		"check": "npm biome check --apply ."
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.4.1",

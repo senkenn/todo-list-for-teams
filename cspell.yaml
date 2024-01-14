@@ -1,5 +1,5 @@
 ignorePaths:
-  - pnpm-lock.yaml
+  - package-lock.yaml
   - settings.json
   - extensions.json
   - "*.svg"
