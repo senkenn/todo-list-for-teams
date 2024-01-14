@@ -1,6 +1,6 @@
 {
 	"name": "todo-list-for-teams",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"engines": {
 		"pnpm": "please_use_npm_instead",
 		"npm": ">=9.3.1",
@@ -11,8 +11,12 @@
 	"publisher": "SENKEN",
 	"displayName": "Todo List for Teams",
 	"description": "View Todo list of yours",
-	"categories": ["Other"],
-	"activationEvents": ["onStartupFinished"],
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onStartupFinished"
+	],
 	"main": "./out/extension.js",
 	"repository": {
 		"url": "https://github.com/senkenn/todo-list-for-teams"
