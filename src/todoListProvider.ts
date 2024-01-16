@@ -174,7 +174,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 		const grepResultUntrackedFiles = child_process
 			.execSync(`
 				cd ${this.workspaceRoot}
-				files=$(git ls-files --others --exclude-standard # get untracked files \
+				files=$(git ls-files --others --exclude-standard \
 					| grep -v /$) # exclude directory
 				if [ -n "$files" ]; then
 					echo "$files" | xargs -d '\n' grep --with-filename -n -E ${searchWordShell.source}
