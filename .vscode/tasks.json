@@ -4,36 +4,17 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "watch",
 			"type": "npm",
 			"script": "watch",
-			"problemMatcher": "$ts-webpack-watch",
+			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
 			"presentation": {
-				"reveal": "never",
-				"group": "watchers"
+				"reveal": "never"
 			},
 			"group": {
 				"kind": "build",
 				"isDefault": true
 			}
-		},
-		{
-			"label": "watch-tests",
-			"type": "shell",
-			"command": "npm watch-tests",
-			"problemMatcher": "$tsc-watch",
-			"isBackground": true,
-			"presentation": {
-				"reveal": "never",
-				"group": "watchers"
-			},
-			"group": "build"
-		},
-		{
-			"label": "tasks: watch-tests",
-			"dependsOn": ["watch", "watch-tests"],
-			"problemMatcher": []
 		}
 	]
 }

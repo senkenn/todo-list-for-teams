@@ -14,18 +14,19 @@
 				"--disable-extensions"
 			],
 			"outFiles": ["${workspaceFolder}/out/**/*.js"],
-			"preLaunchTask": "watch"
+			"preLaunchTask": "${defaultBuildTask}"
 		},
 		{
 			"name": "Extension Tests",
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
-				"--extensionDevelopmentPath={workspaceFolder}",
-				"--extensionTestsPath={workspaceFolder}/out/test/suite/index"
+				"--disable-extensions",
+				"--extensionDevelopmentPath=${workspaceFolder}",
+				"--extensionTestsPath=${workspaceFolder}/out/test/suite/index"
 			],
-			"outFiles": ["{workspaceFolder}/out/**/*.js"],
-			"preLaunchTask": "tasks: watch-tests"
+			"outFiles": ["${workspaceFolder}/out/test/**/*.js"],
+			"preLaunchTask": "${defaultBuildTask}"
 		}
 	]
 }
