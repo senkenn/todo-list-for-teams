@@ -11,12 +11,8 @@
 	"publisher": "SENKEN",
 	"displayName": "Todo List for Teams",
 	"description": "View Todo list of yours",
-	"categories": [
-		"Other"
-	],
-	"activationEvents": [
-		"onStartupFinished"
-	],
+	"categories": ["Other"],
+	"activationEvents": ["onStartupFinished"],
 	"main": "./out/extension.js",
 	"repository": {
 		"url": "https://github.com/senkenn/todo-list-for-teams"
