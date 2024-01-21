@@ -8,11 +8,13 @@ import {
 	TypedWorkspaceState,
 } from "./todoListProvider";
 
-export function activate(context: vscode.ExtensionContext): void {
+export function activate(
+	context: vscode.ExtensionContext,
+): vscode.ExtensionContext {
 	const rootPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
 	log.call({ rootPath });
 	if (!rootPath) {
-		return;
+		return context;
 	}
 
 	// If git is not installed, show error message with tree view
@@ -23,7 +25,7 @@ export function activate(context: vscode.ExtensionContext): void {
 		vscode.window.createTreeView("todo-list-for-teams", {
 			treeDataProvider: new TodoListProvider("Git is not installed."),
 		});
-		return;
+		return context;
 	}
 
 	// If git is not initialized, show error message with tree view
@@ -34,7 +36,7 @@ export function activate(context: vscode.ExtensionContext): void {
 		vscode.window.createTreeView("todo-list-for-teams", {
 			treeDataProvider: new TodoListProvider("Not a git repository."),
 		});
-		return;
+		return context;
 	}
 
 	// Initialize workspace state
@@ -143,6 +145,7 @@ export function activate(context: vscode.ExtensionContext): void {
 	];
 
 	context.subscriptions.push(...disposables);
+	return context;
 }
 
 export function deactivate() {}
