@@ -30,7 +30,7 @@ It is designed to be used with git. This was created for the purpose of excludin
 
 ## Contributing
 
-We welcome contributions! Please see [vsc-extension-quickstart.md](vsc-extension-quickstart.md) for details.
+Welcome! Please see [vsc-extension-quickstart.md](vsc-extension-quickstart.md) for details.
 
 ## License
 

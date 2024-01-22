@@ -13,7 +13,7 @@ pre-commit:
   parallel: true
   commands:
     biome:
-      glob: "*.{js,ts,jsx,tsx,json,yml,yaml,css,scss,md}"
+      glob: "*.{js,ts,jsx,tsx,json,css,scss}"
       run: |
         npx biome check --apply {staged_files}
     cspell:
