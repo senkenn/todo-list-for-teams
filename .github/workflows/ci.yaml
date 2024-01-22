@@ -10,6 +10,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: npm install
+      - run: node --version
       - name: Run unit tests
 
         run: |
