@@ -18,7 +18,7 @@ jobs:
           sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
           sudo service dbus start
           export XDG_RUNTIME_DIR=/run/user/$(id -u)
-          sudo mkdir $XDG_RUNTIME_DIR
+          # sudo mkdir $XDG_RUNTIME_DIR
           sudo chmod 700 $XDG_RUNTIME_DIR
           sudo chown $(id -un):$(id -gn) $XDG_RUNTIME_DIR
           export DBUS_SESSION_BUS_ADDRESS=unix:path=$XDG_RUNTIME_DIR/bus
