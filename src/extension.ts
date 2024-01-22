@@ -56,8 +56,8 @@ export function activate(
 	workspaceState.update("todoList", todoListProvider.generateTodoList());
 
 	// Trigger
-	vscode.workspace.onDidChangeTextDocument(() => {
-		console.log("File was changed");
+	vscode.workspace.onDidSaveTextDocument(() => {
+		console.log("File was saved");
 		workspaceState.update("todoList", todoListProvider.generateTodoList());
 		todoListProvider.refresh();
 	});

@@ -177,7 +177,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 				files=$(git ls-files --others --exclude-standard \
 					| grep -v /$) # exclude directory
 				if [ -n "$files" ]; then
-					echo "$files" | xargs -d '\n' grep --with-filename -n -E ${searchWordShell.source}
+					echo "$files" | xargs -d '\\n' grep --with-filename -n -E ${searchWordShell.source}
 				fi
 				`)
 			.toString();

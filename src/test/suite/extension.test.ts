@@ -4,14 +4,15 @@ import * as child_process from "child_process";
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from "vscode";
-import { activate } from "../../extension";
-import { log } from "../../logger";
-import {
-	CommandOpenFile,
-	TodoListProvider,
-	TodoTreeItem,
-	TypedWorkspaceState,
-} from "../../todoListProvider";
+import { TypedWorkspaceState } from "../../todoListProvider";
+
+let fileCount = 0;
+function createMdFileName() {
+	return `test${fileCount++}.md`;
+}
+function createMdFileNameWithSpace() {
+	return `test ${fileCount++}.md`;
+}
 
 const todoList = [
 	{
@@ -72,25 +73,20 @@ suite("Extension Test Suite", () => {
 	});
 
 	test("Created todo list with uncommitted files", async () => {
-		const wsEdit = new vscode.WorkspaceEdit();
+		// create file
 		const wsPath = (
 			vscode.workspace.workspaceFolders as unknown as vscode.WorkspaceFolder[]
 		)[0].uri.fsPath; // gets the path of the first workspace folder
-		console.log("####", wsPath);
-
-		const filePath = `${wsPath}/test.md`;
-		const testFileContent = "<!-- TODO: test todo -->";
-		child_process
-			.execSync(`touch ${filePath} && echo "${testFileContent}" > ${filePath}`)
-			.toString();
+		const fileAbsPath = `${wsPath}/${createMdFileName()}`;
+		child_process.execSync(`touch ${fileAbsPath}`);
 
 		// open file and save
-		const document = await vscode.workspace.openTextDocument(filePath);
+		const document = await vscode.workspace.openTextDocument(fileAbsPath);
 		const editor = await vscode.window.showTextDocument(document);
-		editor.edit((editBuilder) => {
-			editBuilder.insert(new vscode.Position(0, 0), "Hello World!");
+		await editor.edit((editBuilder) => {
+			editBuilder.insert(new vscode.Position(0, 0), "<!-- TODO: test todo -->");
 		});
-		await vscode.workspace.applyEdit(wsEdit);
+		await document.save();
 
 		// get todo list
 		const ext = vscode.extensions.getExtension("senken.todo-list-for-teams");
@@ -101,19 +97,124 @@ suite("Extension Test Suite", () => {
 			...todoList,
 			{
 				character: 5,
-				fileAbsPath:
-					"/home/senken/personal/vsce-base/todo-list-for-teams/src/test/test-workspace/test.md",
+				fileAbsPath,
 				isIgnored: false,
 				line: 1,
 				prefix: "TODO",
 				preview: "TODO: test todo -->",
 			},
 		];
-		assert.deepEqual(workspaceState.get("todoList"), todoListWithUncommitted);
 
 		// remove test file
-		child_process.execSync(`rm -f ${filePath}`).toString();
+		child_process.execSync(`rm ${fileAbsPath}`).toString();
+
+		// check todo list
+		assert.deepEqual(workspaceState.get("todoList"), todoListWithUncommitted);
 	});
+
+	test("Created todo list with uncommitted files and space in file name", async () => {
+		// create file
+		const wsPath = (
+			vscode.workspace.workspaceFolders as unknown as vscode.WorkspaceFolder[]
+		)[0].uri.fsPath; // gets the path of the first workspace folder
+		const fileAbsPath = `${wsPath}/${createMdFileNameWithSpace()}`;
+		child_process.execSync(`touch "${fileAbsPath}"`);
+
+		// open file and save
+		const document = await vscode.workspace.openTextDocument(fileAbsPath);
+		const editor = await vscode.window.showTextDocument(document);
+		await editor.edit((editBuilder) => {
+			editBuilder.insert(new vscode.Position(0, 0), "<!-- TODO: test todo -->");
+		});
+		await document.save();
+
+		// get todo list
+		const ext = vscode.extensions.getExtension("senken.todo-list-for-teams");
+		const context = (await ext?.activate()) as vscode.ExtensionContext;
+		const workspaceState = new TypedWorkspaceState(context?.workspaceState);
+
+		const todoListWithUncommitted = [
+			...todoList,
+			{
+				character: 5,
+				fileAbsPath,
+				isIgnored: false,
+				line: 1,
+				prefix: "TODO",
+				preview: "TODO: test todo -->",
+			},
+		];
+
+		// remove test file
+		child_process.execSync(`rm -f "${fileAbsPath}"`).toString();
+
+		// check todo list
+		assert.deepEqual(workspaceState.get("todoList"), todoListWithUncommitted);
+	});
+
+	test("Created todo list with uncommitted files and multiple files", async () => {
+		// create file
+		const wsPath = (
+			vscode.workspace.workspaceFolders as unknown as vscode.WorkspaceFolder[]
+		)[0].uri.fsPath; // gets the path of the first workspace folder
+		const fileAbsPath = `${wsPath}/${createMdFileName()}`;
+		const fileAbsPath2 = `${wsPath}/${createMdFileNameWithSpace()}`;
+		child_process.execSync(`touch "${fileAbsPath}" "${fileAbsPath2}"`);
+
+		// open file and save
+		const document = await vscode.workspace.openTextDocument(fileAbsPath);
+		const editor = await vscode.window.showTextDocument(document);
+		await editor.edit((editBuilder) => {
+			editBuilder.insert(new vscode.Position(0, 0), "<!-- TODO: test todo -->");
+		});
+		await document.save();
+
+		// close file
+		await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+
+		const document2 = await vscode.workspace.openTextDocument(fileAbsPath2);
+		const editor2 = await vscode.window.showTextDocument(document2);
+		await editor2.edit((editBuilder) => {
+			editBuilder.insert(
+				new vscode.Position(0, 0),
+				" <!-- HACK: test hack -->",
+			);
+		});
+		await document2.save();
+
+		// get todo list
+		const ext = vscode.extensions.getExtension("senken.todo-list-for-teams");
+		const context = (await ext?.activate()) as vscode.ExtensionContext;
+		const workspaceState = new TypedWorkspaceState(context?.workspaceState);
+
+		const todoListWithUncommitted = [
+			...todoList,
+			{
+				character: 6,
+				fileAbsPath: fileAbsPath2,
+				isIgnored: false,
+				line: 1,
+				prefix: "HACK",
+				preview: "HACK: test hack -->",
+			},
+			{
+				character: 5,
+				fileAbsPath,
+				isIgnored: false,
+				line: 1,
+				prefix: "TODO",
+				preview: "TODO: test todo -->",
+			},
+		];
+
+		// remove test file
+		child_process.execSync(`rm -f "${fileAbsPath}"`).toString();
+		child_process.execSync(`rm -f "${fileAbsPath2}"`).toString();
+
+		// check todo list
+		assert.deepEqual(workspaceState.get("todoList"), todoListWithUncommitted);
+	});
+
 	// test("Refresh command", () => {
 	// 	const todoListProvider = new TodoListProvider();
 
