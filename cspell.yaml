@@ -3,6 +3,7 @@ ignorePaths:
   - settings.json
   - extensions.json
   - "*.svg"
+  - ci.yaml
 words:
   - biomejs
   - lefthook
