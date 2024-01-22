@@ -84,7 +84,7 @@
 		"watch": "webpack --watch",
 		"package": "webpack --mode production --devtool hidden-source-map",
 		"watch-tests": "tsc -p . -w",
-		"test": "tsc -p . && xvfb-run --auto-servernum -- node ./out/test/runTest.js",
+		"test": "tsc -p . && node ./out/test/runTest.js",
 		"check": "npm biome check --apply ."
 	},
 	"devDependencies": {
