@@ -11,11 +11,12 @@ import {
 export function activate(
 	context: vscode.ExtensionContext,
 ): vscode.ExtensionContext {
-	log.call({ folders: vscode.workspace.workspaceFolders });
+	log.call({ contextWorkspaceState: context.workspaceState });
+	// log.call({ workspace: vscode.workspace });
 	const rootPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
 	log.call({ rootPath });
 	if (!rootPath) {
-		return context;
+		throw new Error("rootPath is undefined");
 	}
 
 	// If git is not installed, show error message with tree view
