@@ -5,13 +5,8 @@ on:
 
 jobs:
   build:
-    runs-on: macos-12
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18.x
+      - uses: actions/checkout@v4
       - run: npm install
-      - run: npm test
+      - run: xvfb-run -a npm test
