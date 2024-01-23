@@ -8,7 +8,7 @@ const searchWordTS = /TODO:|FIXME:|HACK:|NOTE:/;
 
 const prefixes = ["TODO", "FIXME", "HACK", "NOTE"] as const;
 type Prefix = (typeof prefixes)[number];
-type TodoList = {
+export type TodoList = {
 	prefix: Prefix;
 	fileAbsPath: string;
 	line: number;
