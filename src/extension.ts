@@ -11,8 +11,6 @@ import {
 export function activate(
 	context: vscode.ExtensionContext,
 ): vscode.ExtensionContext {
-	log.call({ contextWorkspaceState: context.workspaceState });
-	// log.call({ workspace: vscode.workspace });
 	const rootPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
 	log.call({ rootPath });
 	if (!rootPath) {
