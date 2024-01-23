@@ -4,8 +4,8 @@ import * as child_process from "child_process";
 // You can import and use all API from the 'vscode' module
 // as well as import your extension to test it
 import * as vscode from "vscode";
-import { TypedWorkspaceState } from "../../todoListProvider";
 import { log } from "../../logger";
+import { TypedWorkspaceState } from "../../todoListProvider";
 
 let fileCount = 0;
 function createMdFileName() {
@@ -27,7 +27,7 @@ function gitInitAndCommit(directoryPath: string): CommitHash {
 	child_process.execSync(`cd ${directoryPath} && git commit -m "unit test"`);
 
 	return child_process
-		.execSync(`cd ${directoryPath} && git rev-parse HEAD`)
+		.execSync(`cd ${directoryPath} && git rev-parse --short=8 HEAD`)
 		.toString()
 		.trim();
 }
