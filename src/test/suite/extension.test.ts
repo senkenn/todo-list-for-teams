@@ -5,6 +5,7 @@ import * as child_process from "child_process";
 // as well as import your extension to test it
 import * as vscode from "vscode";
 import { TypedWorkspaceState } from "../../todoListProvider";
+import { log } from "../../logger";
 
 let fileCount = 0;
 function createMdFileName() {
@@ -14,65 +15,87 @@ function createMdFileNameWithSpace() {
 	return `test ${fileCount++}.md`;
 }
 
-const todoList = [
-	{
-		prefix: "TODO",
-		fileAbsPath:
-			"/home/senken/personal/vsce-base/todo-list-for-teams/src/test/test-workspace/test.ts",
-		line: 1,
-		character: 3,
-		preview: "TODO: todo",
-		isIgnored: false,
-		commitHash: "6320a811",
-		author: "senkenn",
-	},
-	{
-		prefix: "HACK",
-		fileAbsPath:
-			"/home/senken/personal/vsce-base/todo-list-for-teams/src/test/test-workspace/test.ts",
-		line: 2,
-		character: 3,
-		preview: "HACK: hack",
-		isIgnored: false,
-		commitHash: "6320a811",
-		author: "senkenn",
-	},
-	{
-		prefix: "FIXME",
-		fileAbsPath:
-			"/home/senken/personal/vsce-base/todo-list-for-teams/src/test/test-workspace/test.ts",
-		line: 3,
-		character: 3,
-		preview: "FIXME: fixme",
-		isIgnored: false,
-		commitHash: "6320a811",
-		author: "senkenn",
-	},
-	{
-		prefix: "NOTE",
-		fileAbsPath:
-			"/home/senken/personal/vsce-base/todo-list-for-teams/src/test/test-workspace/test.ts",
-		line: 4,
-		character: 3,
-		preview: "NOTE: note",
-		isIgnored: false,
-		commitHash: "6320a811",
-		author: "senkenn",
-	},
-];
+type CommitHash = string;
+
+/**
+ * Git Initialize and Commit
+ * @param directoryPath
+ */
+function gitInitAndCommit(directoryPath: string): CommitHash {
+	child_process.execSync(`cd ${directoryPath} && git init`);
+	child_process.execSync(`cd ${directoryPath} && git add .`);
+	child_process.execSync(`cd ${directoryPath} && git commit -m "unit test"`);
+
+	return child_process
+		.execSync(`cd ${directoryPath} && git rev-parse HEAD`)
+		.toString()
+		.trim();
+}
 
 suite("Extension Test Suite", () => {
 	vscode.window.showInformationMessage("Start all tests.");
 
-	test("Created todo list with committed files", async () => {
-		const ext = vscode.extensions.getExtension("senken.todo-list-for-teams");
-		const context = (await ext?.activate()) as vscode.ExtensionContext;
+	const wsPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+	if (!wsPath) {
+		throw new Error("wsPath is undefined");
+	}
+	log.call({ wsPath });
+	const commitHash = gitInitAndCommit(wsPath);
+
+	const todoList = [
+		{
+			prefix: "TODO",
+			fileAbsPath: `${wsPath}/test.ts`,
+			line: 1,
+			character: 3,
+			preview: "TODO: todo",
+			isIgnored: false,
+			commitHash,
+			author: "senkenn",
+		},
+		{
+			prefix: "HACK",
+			fileAbsPath: `${wsPath}/test.ts`,
+			line: 2,
+			character: 3,
+			preview: "HACK: hack",
+			isIgnored: false,
+			commitHash,
+			author: "senkenn",
+		},
+		{
+			prefix: "FIXME",
+			fileAbsPath: `${wsPath}/test.ts`,
+			line: 3,
+			character: 3,
+			preview: "FIXME: fixme",
+			isIgnored: false,
+			commitHash,
+			author: "senkenn",
+		},
+		{
+			prefix: "NOTE",
+			fileAbsPath: `${wsPath}/test.ts`,
+			line: 4,
+			character: 3,
+			preview: "NOTE: note",
+			isIgnored: false,
+			commitHash,
+			author: "senkenn",
+		},
+	];
+
+	test("Should be create todo list with committed files", async () => {
+		const ext = vscode.extensions.getExtension<vscode.ExtensionContext>(
+			"senken.todo-list-for-teams",
+		);
+		const context = await ext?.activate();
+		if (!context) {
+			throw new Error("context is undefined");
+		}
 		const workspaceState = new TypedWorkspaceState(context.workspaceState);
 
-		console.log(context.workspaceState.keys());
-		// assert.deepEqual(workspaceState.get("todoList"), todoList);
-		console.log("test");
-		assert.ok(true);
+		assert.deepEqual(workspaceState.get("todoList"), todoList);
 	});
 
 	// test("Created todo list with uncommitted files", async () => {
