@@ -6,7 +6,7 @@
 		"npm": ">=9.3.1",
 		"yarn": "please_use_npm_instead",
 		"node": ">=18",
-		"vscode": "^1.84.0"
+		"vscode": "1.80.0"
 	},
 	"publisher": "SENKEN",
 	"displayName": "Todo List for Teams",
@@ -93,7 +93,7 @@
 		"@types/mocha": "^10.0.3",
 		"@types/node": "^18.0.0",
 		"@types/vscode": "^1.84.0",
-		"@vscode/test-electron": "^2.3.6",
+		"@vscode/test-electron": "^2.3.8",
 		"cspell": "^8.0.0",
 		"glob": "^10.3.10",
 		"lefthook": "^1.5.3",
