@@ -69,6 +69,7 @@ suite("Extension Test Suite", () => {
 		const context = await ext?.activate();
 		const workspaceState = new TypedWorkspaceState(context?.workspaceState);
 
+		console.log(workspaceState.get("todoList"));
 		// assert.deepEqual(workspaceState.get("todoList"), todoList);
 		console.log("test");
 		assert.ok(true);
