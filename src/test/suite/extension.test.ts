@@ -66,7 +66,7 @@ suite("Extension Test Suite", () => {
 
 	test("Created todo list with committed files", async () => {
 		const ext = vscode.extensions.getExtension("senken.todo-list-for-teams");
-		// const context = await ext?.activate();
+		const context = await ext?.activate();
 		// const workspaceState = new TypedWorkspaceState(context?.workspaceState);
 
 		// assert.deepEqual(workspaceState.get("todoList"), todoList);
