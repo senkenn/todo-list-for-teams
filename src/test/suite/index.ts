@@ -1,34 +1,17 @@
+import { runCLI } from "jest";
+
 import * as path from "path";
-import { glob } from "glob";
-import * as Mocha from "mocha";
+import type { Config } from "@jest/types";
 
-export async function run(): Promise<void> {
-	// Create the mocha test
-	const mocha = new Mocha({
-		ui: "tdd",
-		color: true,
-	});
+export async function run(
+	testsRoot: string,
+	clb: (error?: Error, failures?: number) => void,
+): Promise<void> {
+	// const projectRootPath = process.cwd();
+	const projectRootPath = path.resolve(__dirname, "../../../");
+	const config = path.join(projectRootPath, "jest.config.js");
 
-	const testsRoot = path.resolve(__dirname, "..");
-	const files = await glob("**/**.test.js", { cwd: testsRoot });
+	console.info(`Running Jest tests from ${projectRootPath}...`);
 
-	// Add files to the test suite
-	for (const file of files) {
-		mocha.addFile(path.resolve(testsRoot, file));
-	}
-
-	try {
-		return new Promise<void>((c, e) => {
-			// Run the mocha test
-			mocha.run((failures) => {
-				if (failures > 0) {
-					e(new Error(`${failures} tests failed.`));
-				} else {
-					c();
-				}
-			});
-		});
-	} catch (err) {
-		console.error(err);
-	}
+	await runCLI({ config } as Config.Argv, [projectRootPath]);
 }
