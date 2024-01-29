@@ -7,7 +7,6 @@ export async function run(
 	testsRoot: string,
 	clb: (error?: Error, failures?: number) => void,
 ): Promise<void> {
-	// const projectRootPath = process.cwd();
 	const projectRootPath = path.resolve(__dirname, "../../../");
 	const config = path.join(projectRootPath, "jest.config.js");
 
