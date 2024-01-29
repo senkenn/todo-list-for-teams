@@ -6,7 +6,7 @@ function gitSetupAndCreateExpectedTodoList(wsPath: string): TodoList {
 	// git config
 	const author = "Test User";
 	child_process.execSync(
-		`git config --global user.name "${author}" && git config --global user.email "you@example.com"`,
+		`cd ${wsPath} && git init && git config --local user.name "${author}" && git config --local user.email "you@example.com"`,
 	);
 
 	// git init and commit test.md
@@ -15,10 +15,9 @@ function gitSetupAndCreateExpectedTodoList(wsPath: string): TodoList {
 <!-- FIXME: fixme -->
 <!-- NOTE: note -->`;
 	const commitFileName = "test.md";
-	const result = child_process
+	child_process
 		.execSync(
 			`cd ${wsPath} && \
-			 git init && \
 			 touch ${commitFileName} && \
 			 echo "${commitFileContent}" > ${commitFileName} && \
 			 git add . && \
@@ -112,12 +111,6 @@ describe("Extension Test Suite", () => {
 	});
 
 	test("Should be create todo list with committed files", async () => {
-		// git config
-		const author = "Test User";
-		child_process.execSync(
-			`cd ${wsPath} && git config --local user.name "${author}" && git config --local user.email "you@example.com"`,
-		);
-
 		const expectedTodoList = gitSetupAndCreateExpectedTodoList(wsPath);
 		const extContext = await getExtContext();
 		await vscode.commands.executeCommand("todo-list-for-teams.refresh");
