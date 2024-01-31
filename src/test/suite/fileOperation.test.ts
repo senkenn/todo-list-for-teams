@@ -6,7 +6,7 @@ import {
 	createMdFileNameWithSpace,
 	getExtContext,
 	gitSetupAndCreateExpectedTodoList,
-} from "../utils";
+} from "../testUtils";
 
 describe("Git tests", () => {
 	const wsPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
