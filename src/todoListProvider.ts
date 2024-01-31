@@ -116,6 +116,20 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 					done
 				`)
 			.toString();
+		console.log(
+			child_process
+				.execSync(
+					'git grep -n -E TODO:|FIXME:|HACK:|NOTE: | while IFS=: read i j k; do echo -n "$i\\t"; git annotate -L $j,$j "$i" | cat; done',
+				)
+				.toString(),
+		);
+		console.log(
+			child_process
+				.execSync(
+					'git grep -n -E TODO:|FIXME:|HACK:|NOTE: | while IFS=: read i j k; do echo -n "$i\t"; git annotate -L $j,$j "$i" | cat; done',
+				)
+				.toString(),
+		);
 		const trackedTodoList: TodoList =
 			grepTrackedFiles === ""
 				? []
