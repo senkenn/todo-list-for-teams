@@ -160,7 +160,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 									ignored.line === line,
 							);
 
-							log.call({
+							console.log(
 								prefix,
 								fileAbsPath,
 								line,
@@ -169,7 +169,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 								isIgnored,
 								commitHash,
 								author,
-							});
+							);
 							return {
 								prefix,
 								fileAbsPath,
