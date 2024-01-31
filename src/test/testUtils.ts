@@ -1,5 +1,5 @@
-import * as vscode from "vscode";
 import * as child_process from "child_process";
+import * as vscode from "vscode";
 import { TodoList } from "../todoListProvider";
 
 export function gitSetupAndCreateExpectedTodoList(wsPath: string): TodoList {
