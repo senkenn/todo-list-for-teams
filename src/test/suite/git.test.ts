@@ -1,102 +1,14 @@
 import * as child_process from "child_process";
 import * as vscode from "vscode";
-import { TodoList, TypedWorkspaceState } from "../../todoListProvider";
+import { TypedWorkspaceState } from "../../todoListProvider";
+import {
+	createMdFileName,
+	createMdFileNameWithSpace,
+	getExtContext,
+	gitSetupAndCreateExpectedTodoList,
+} from "../utils";
 
-function gitSetupAndCreateExpectedTodoList(wsPath: string): TodoList {
-	// git config
-	const author = "Test User";
-	child_process.execSync(
-		`cd ${wsPath} && git init && git config --local user.name "${author}" && git config --local user.email "you@example.com"`,
-	);
-
-	// git init and commit test.md
-	const commitFileContent = `<!-- TODO: todo -->
-<!-- HACK: hack -->
-<!-- FIXME: fixme -->
-<!-- NOTE: note -->`;
-	const commitFileName = "test.md";
-	child_process
-		.execSync(
-			`cd ${wsPath} && \
-			 touch ${commitFileName} && \
-			 echo "${commitFileContent}" > ${commitFileName} && \
-			 git add . && \
-			 git commit -m "init"`,
-		)
-		.toString();
-	const commitHash = child_process
-		.execSync(`cd ${wsPath} && git rev-parse --short=8 HEAD`)
-		.toString()
-		.trim();
-
-	// create expected todo list
-	const todoList: TodoList = [
-		{
-			prefix: "TODO",
-			fileAbsPath: `${wsPath}/test.md`,
-			line: 1,
-			character: 5,
-			preview: "TODO: todo -->",
-			isIgnored: false,
-			commitHash,
-			author,
-		},
-		{
-			prefix: "HACK",
-			fileAbsPath: `${wsPath}/test.md`,
-			line: 2,
-			character: 5,
-			preview: "HACK: hack -->",
-			isIgnored: false,
-			commitHash,
-			author,
-		},
-		{
-			prefix: "FIXME",
-			fileAbsPath: `${wsPath}/test.md`,
-			line: 3,
-			character: 5,
-			preview: "FIXME: fixme -->",
-			isIgnored: false,
-			commitHash,
-			author,
-		},
-		{
-			prefix: "NOTE",
-			fileAbsPath: `${wsPath}/test.md`,
-			line: 4,
-			character: 5,
-			preview: "NOTE: note -->",
-			isIgnored: false,
-			commitHash,
-			author,
-		},
-	];
-
-	return todoList;
-}
-
-async function getExtContext(): Promise<vscode.ExtensionContext> {
-	const ext = vscode.extensions.getExtension<vscode.ExtensionContext>(
-		"senken.todo-list-for-teams",
-	);
-	const context = await ext?.activate();
-	if (!context) {
-		throw new Error("context is undefined");
-	}
-
-	return context;
-}
-
-let fileCount = 0;
-function createMdFileName() {
-	return `test${fileCount++}.md`;
-}
-function createMdFileNameWithSpace() {
-	return `test ${fileCount++}.md`;
-}
-
-describe("Extension Test Suite", () => {
+describe("Git tests", () => {
 	const wsPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
 	if (!wsPath) {
 		throw new Error("wsPath is undefined");
@@ -241,69 +153,4 @@ describe("Extension Test Suite", () => {
 			},
 		]);
 	});
-
-	// test("Refresh command", () => {
-	// 	const todoListProvider = new TodoListProvider();
-
-	// 	// Mock the refresh method
-	// 	sinon.stub(todoListProvider, "refresh");
-
-	// 	vscode.commands.executeCommand("todo-list-for-teams.refresh");
-
-	// 	// Check if the refresh method has been called
-	// 	assert.ok(todoListProvider.refresh.calledOnce);
-	// });
-
-	// test("Reset command", () => {
-	// 	const todoListProvider = new TodoListProvider();
-
-	// 	// Mock the generateTodoList and refresh methods
-	// 	sinon.stub(todoListProvider, "generateTodoList");
-	// 	sinon.stub(todoListProvider, "refresh");
-
-	// 	vscode.commands.executeCommand("todo-list-for-teams.reset");
-
-	// 	// Check if the generateTodoList and refresh methods have been called
-	// 	assert.ok(todoListProvider.generateTodoList.calledOnce);
-	// 	assert.ok(todoListProvider.refresh.calledOnce);
-	// });
-
-	// test("OpenFile command", () => {
-	// 	const commandOpenFile: CommandOpenFile = {
-	// 		// Mock the CommandOpenFile
-	// 	};
-
-	// 	vscode.commands.executeCommand(
-	// 		"todo-list-for-teams.openFile",
-	// 		commandOpenFile,
-	// 	);
-
-	// 	// Check if the showTextDocument method has been called
-	// 	assert.ok(vscode.window.showTextDocument.calledOnce);
-	// });
-
-	// test("AddToIgnoreList command", () => {
-	// 	const todoItem: TodoTreeItem = {
-	// 		// Mock the TodoTreeItem
-	// 	};
-
-	// 	vscode.commands.executeCommand(
-	// 		"todo-list-for-teams.addToIgnoreList",
-	// 		todoItem,
-	// 	);
-
-	// 	// Check if the refresh method has been called
-	// 	assert.ok(todoListProvider.refresh.calledOnce);
-	// });
-
-	// test("RestoreItem command", () => {
-	// 	const todoItem: TodoTreeItem = {
-	// 		// Mock the TodoTreeItem
-	// 	};
-
-	// 	vscode.commands.executeCommand("todo-list-for-teams.restoreItem", todoItem);
-
-	// 	// Check if the refresh method has been called
-	// 	assert.ok(todoListProvider.refresh.calledOnce);
-	// });
 });
