@@ -20,5 +20,8 @@
 	},
 	"[yaml]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	}
+	},
+	"github-actions.workflows.pinned.workflows": [".github/workflows/ci.yaml"],
+	"github-actions.workflows.pinned.refresh.interval": 3,
+	"github-actions.workflows.pinned.refresh.enabled": true
 }

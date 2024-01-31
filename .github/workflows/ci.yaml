@@ -1,11 +1,11 @@
-name: Unit Test
+name: E2E Tests
 on:
   push:
     branches:
       - main
 
 jobs:
-  build:
+  test:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest]
