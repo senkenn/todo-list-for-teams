@@ -135,9 +135,11 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 								lineStr,
 								fullPreview,
 							] = formattedOutput.split("\t");
+							log.call({ output, formattedOutput });
 							const fileAbsPath = `${this.workspaceRoot}/${filePath}`;
 							const line = Number(lineStr);
 							const matchedWord = fullPreview.match(searchWordTS);
+							log.call({ fullPreview, matchedWord });
 							if (matchedWord?.index === undefined) {
 								throw new ShouldHaveBeenIncludedSearchWordError(output);
 							}
@@ -160,16 +162,6 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 									ignored.line === line,
 							);
 
-							console.log(
-								prefix,
-								fileAbsPath,
-								line,
-								character,
-								preview,
-								isIgnored,
-								commitHash,
-								author,
-							);
 							return {
 								prefix,
 								fileAbsPath,
