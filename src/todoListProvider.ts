@@ -111,7 +111,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 				cd ${this.workspaceRoot}
 				git grep -n -E ${searchWordShell.source} \
 				| while IFS=: read i j k; do \
-						echo -n "$i\t"
+						/bin/echo -n "$i\t"
 						git annotate -L $j,$j "$i" | cat
 					done
 				`)
@@ -119,14 +119,14 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 		console.log(
 			child_process
 				.execSync(
-					'git grep -n -E TODO:\\|FIXME:\\|HACK:\\|NOTE: | while IFS=: read i j k; do echo -n "$i\\t"; git annotate -L $j,$j "$i" | cat; done',
+					'git grep -n -E TODO:\\|FIXME:\\|HACK:\\|NOTE: | while IFS=: read i j k; do /bin/echo -n "$i\\t"; git annotate -L $j,$j "$i" | cat; done',
 				)
 				.toString(),
 		);
 		console.log(
 			child_process
 				.execSync(
-					'git grep -n -E TODO:\\|FIXME:\\|HACK:\\|NOTE: | while IFS=: read i j k; do echo -n "$i\t"; git annotate -L $j,$j "$i" | cat; done',
+					'git grep -n -E TODO:\\|FIXME:\\|HACK:\\|NOTE: | while IFS=: read i j k; do /bin/echo -n "$i\t"; git annotate -L $j,$j "$i" | cat; done',
 				)
 				.toString(),
 		);
