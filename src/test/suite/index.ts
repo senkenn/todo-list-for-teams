@@ -14,23 +14,6 @@ export async function run(
 
 	await runCLI({ config } as Config.Argv, [projectRootPath])
 		.then((jestCliCallResult) => {
-			// biome-ignore lint/complexity/noForEach: <explanation>
-			jestCliCallResult.results.testResults.forEach((testResult) => {
-				// biome-ignore lint/complexity/noForEach: <explanation>
-				testResult.testResults
-					.filter((assertionResult) => assertionResult.status === "passed")
-					.forEach(({ ancestorTitles, title, status }) => {
-						console.info(`  ● ${ancestorTitles} > ${title} (${status})`);
-					});
-			});
-
-			// biome-ignore lint/complexity/noForEach: <explanation>
-			jestCliCallResult.results.testResults.forEach((testResult) => {
-				if (testResult.failureMessage) {
-					console.error(testResult.failureMessage);
-				}
-			});
-
 			reportTestResults(undefined, jestCliCallResult.results.numFailedTests);
 		})
 		.catch((errorCaughtByJestRunner) => {

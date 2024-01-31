@@ -116,20 +116,6 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 					done
 				`)
 			.toString();
-		console.log(
-			child_process
-				.execSync(
-					'git grep -n -E TODO:\\|FIXME:\\|HACK:\\|NOTE: | while IFS=: read i j k; do /bin/echo -n "$i\\t"; git annotate -L $j,$j "$i" | cat; done',
-				)
-				.toString(),
-		);
-		console.log(
-			child_process
-				.execSync(
-					'git grep -n -E TODO:\\|FIXME:\\|HACK:\\|NOTE: | while IFS=: read i j k; do /bin/echo -n "$i\t"; git annotate -L $j,$j "$i" | cat; done',
-				)
-				.toString(),
-		);
 		const trackedTodoList: TodoList =
 			grepTrackedFiles === ""
 				? []
@@ -193,7 +179,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 				cd ${this.workspaceRoot}
 				files=$(git ls-files --others --exclude-standard) # exclude directory
 				if [ -n "$files" ]; then
-					echo "$files" | xargs -d '\\n' grep --with-filename -n -E ${searchWordShell.source}
+					/bin/echo "$files" | xargs -d '\\n' grep --with-filename -n -E ${searchWordShell.source}
 				fi
 				`)
 			.toString();
