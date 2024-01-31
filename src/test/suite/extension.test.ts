@@ -120,127 +120,127 @@ describe("Extension Test Suite", () => {
 		expect(workspaceState.get("todoList")).toEqual(expectedTodoList);
 	});
 
-	// test("Created todo list with uncommitted files", async () => {
-	// 	const expectedTodoList = gitSetupAndCreateExpectedTodoList(wsPath);
+	test("Created todo list with uncommitted files", async () => {
+		const expectedTodoList = gitSetupAndCreateExpectedTodoList(wsPath);
 
-	// 	// create file
-	// 	const fileAbsPath = `${wsPath}/${createMdFileName()}`;
-	// 	child_process.execSync(`touch ${fileAbsPath}`);
+		// create file
+		const fileAbsPath = `${wsPath}/${createMdFileName()}`;
+		child_process.execSync(`touch ${fileAbsPath}`);
 
-	// 	// open file and save
-	// 	const document = await vscode.workspace.openTextDocument(fileAbsPath);
-	// 	const editor = await vscode.window.showTextDocument(document);
-	// 	await editor.edit((editBuilder) => {
-	// 		editBuilder.insert(new vscode.Position(0, 0), "<!-- TODO: test todo -->");
-	// 	});
-	// 	await document.save();
+		// open file and save
+		const document = await vscode.workspace.openTextDocument(fileAbsPath);
+		const editor = await vscode.window.showTextDocument(document);
+		await editor.edit((editBuilder) => {
+			editBuilder.insert(new vscode.Position(0, 0), "<!-- TODO: test todo -->");
+		});
+		await document.save();
 
-	// 	// get todo list
-	// 	const extContext = await getExtContext();
-	// 	const workspaceState = new TypedWorkspaceState(extContext.workspaceState);
+		// get todo list
+		const extContext = await getExtContext();
+		const workspaceState = new TypedWorkspaceState(extContext.workspaceState);
 
-	// 	expect(workspaceState.get("todoList")).toEqual([
-	// 		...expectedTodoList,
-	// 		{
-	// 			character: 5,
-	// 			fileAbsPath,
-	// 			isIgnored: false,
-	// 			line: 1,
-	// 			prefix: "TODO",
-	// 			preview: "TODO: test todo -->",
-	// 		},
-	// 	]);
-	// });
+		expect(workspaceState.get("todoList")).toEqual([
+			...expectedTodoList,
+			{
+				character: 5,
+				fileAbsPath,
+				isIgnored: false,
+				line: 1,
+				prefix: "TODO",
+				preview: "TODO: test todo -->",
+			},
+		]);
+	});
 
-	// test("Created todo list with uncommitted files and space in file name", async () => {
-	// 	const expectedTodoList = gitSetupAndCreateExpectedTodoList(wsPath);
+	test("Created todo list with uncommitted files and space in file name", async () => {
+		const expectedTodoList = gitSetupAndCreateExpectedTodoList(wsPath);
 
-	// 	const fileAbsPath = `${wsPath}/${createMdFileNameWithSpace()}`;
-	// 	child_process.execSync(`touch "${fileAbsPath}"`);
+		const fileAbsPath = `${wsPath}/${createMdFileNameWithSpace()}`;
+		child_process.execSync(`touch "${fileAbsPath}"`);
 
-	// 	// open file and save
-	// 	const document = await vscode.workspace.openTextDocument(fileAbsPath);
-	// 	const editor = await vscode.window.showTextDocument(document);
-	// 	await editor.edit((editBuilder) => {
-	// 		editBuilder.insert(new vscode.Position(0, 0), "<!-- TODO: test todo -->");
-	// 	});
-	// 	await document.save();
+		// open file and save
+		const document = await vscode.workspace.openTextDocument(fileAbsPath);
+		const editor = await vscode.window.showTextDocument(document);
+		await editor.edit((editBuilder) => {
+			editBuilder.insert(new vscode.Position(0, 0), "<!-- TODO: test todo -->");
+		});
+		await document.save();
 
-	// 	// get todo list
-	// 	const extContext = await getExtContext();
-	// 	const workspaceState = new TypedWorkspaceState(extContext.workspaceState);
+		// get todo list
+		const extContext = await getExtContext();
+		const workspaceState = new TypedWorkspaceState(extContext.workspaceState);
 
-	// 	// check todo list
-	// 	expect(workspaceState.get("todoList")).toEqual([
-	// 		...expectedTodoList,
-	// 		{
-	// 			character: 5,
-	// 			fileAbsPath,
-	// 			isIgnored: false,
-	// 			line: 1,
-	// 			prefix: "TODO",
-	// 			preview: "TODO: test todo -->",
-	// 		},
-	// 	]);
-	// });
+		// check todo list
+		expect(workspaceState.get("todoList")).toEqual([
+			...expectedTodoList,
+			{
+				character: 5,
+				fileAbsPath,
+				isIgnored: false,
+				line: 1,
+				prefix: "TODO",
+				preview: "TODO: test todo -->",
+			},
+		]);
+	});
 
-	// test("Created todo list with uncommitted files and multiple files", async () => {
-	// 	const expectedTodoList = gitSetupAndCreateExpectedTodoList(wsPath);
+	test("Created todo list with uncommitted files and multiple files", async () => {
+		const expectedTodoList = gitSetupAndCreateExpectedTodoList(wsPath);
 
-	// 	const fileAbsPath = `${wsPath}/${createMdFileName()}`;
-	// 	const fileAbsPath2 = `${wsPath}/${createMdFileNameWithSpace()}`;
-	// 	child_process.execSync(`touch "${fileAbsPath}" "${fileAbsPath2}"`);
+		const fileAbsPath = `${wsPath}/${createMdFileName()}`;
+		const fileAbsPath2 = `${wsPath}/${createMdFileNameWithSpace()}`;
+		child_process.execSync(`touch "${fileAbsPath}" "${fileAbsPath2}"`);
 
-	// 	// open file and save
-	// 	const document = await vscode.workspace.openTextDocument(fileAbsPath);
-	// 	const editor = await vscode.window.showTextDocument(document);
-	// 	await editor.edit((editBuilder) => {
-	// 		editBuilder.insert(new vscode.Position(0, 0), "<!-- TODO: test todo -->");
-	// 	});
-	// 	await document.save();
+		// open file and save
+		const document = await vscode.workspace.openTextDocument(fileAbsPath);
+		const editor = await vscode.window.showTextDocument(document);
+		await editor.edit((editBuilder) => {
+			editBuilder.insert(new vscode.Position(0, 0), "<!-- TODO: test todo -->");
+		});
+		await document.save();
 
-	// 	// close file
-	// 	await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
+		// close file
+		await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
 
-	// 	const document2 = await vscode.workspace.openTextDocument(fileAbsPath2);
-	// 	const editor2 = await vscode.window.showTextDocument(document2);
-	// 	await editor2.edit((editBuilder) => {
-	// 		editBuilder.insert(
-	// 			new vscode.Position(0, 0),
-	// 			" <!-- HACK: test hack -->",
-	// 		);
-	// 	});
-	// 	await document2.save();
+		const document2 = await vscode.workspace.openTextDocument(fileAbsPath2);
+		const editor2 = await vscode.window.showTextDocument(document2);
+		await editor2.edit((editBuilder) => {
+			editBuilder.insert(
+				new vscode.Position(0, 0),
+				" <!-- HACK: test hack -->",
+			);
+		});
+		await document2.save();
 
-	// 	// get todo list
-	// 	const extContext = await getExtContext();
-	// 	const workspaceState = new TypedWorkspaceState(extContext.workspaceState);
+		// get todo list
+		const extContext = await getExtContext();
+		const workspaceState = new TypedWorkspaceState(extContext.workspaceState);
 
-	// 	// remove test file
-	// 	child_process.execSync(`rm -f "${fileAbsPath}"`).toString();
-	// 	child_process.execSync(`rm -f "${fileAbsPath2}"`).toString();
+		// remove test file
+		child_process.execSync(`rm -f "${fileAbsPath}"`).toString();
+		child_process.execSync(`rm -f "${fileAbsPath2}"`).toString();
 
-	// 	// check todo list
-	// 	expect(workspaceState.get("todoList")).toEqual([
-	// 		...expectedTodoList,
-	// 		{
-	// 			character: 6,
-	// 			fileAbsPath: fileAbsPath2,
-	// 			isIgnored: false,
-	// 			line: 1,
-	// 			prefix: "HACK",
-	// 			preview: "HACK: test hack -->",
-	// 		},
-	// 		{
-	// 			character: 5,
-	// 			fileAbsPath,
-	// 			isIgnored: false,
-	// 			line: 1,
-	// 			prefix: "TODO",
-	// 			preview: "TODO: test todo -->",
-	// 		},
-	// 	]);
-	// });
+		// check todo list
+		expect(workspaceState.get("todoList")).toEqual([
+			...expectedTodoList,
+			{
+				character: 6,
+				fileAbsPath: fileAbsPath2,
+				isIgnored: false,
+				line: 1,
+				prefix: "HACK",
+				preview: "HACK: test hack -->",
+			},
+			{
+				character: 5,
+				fileAbsPath,
+				isIgnored: false,
+				line: 1,
+				prefix: "TODO",
+				preview: "TODO: test todo -->",
+			},
+		]);
+	});
 
 	// test("Refresh command", () => {
 	// 	const todoListProvider = new TodoListProvider();
