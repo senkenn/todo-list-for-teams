@@ -160,6 +160,16 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 									ignored.line === line,
 							);
 
+							log.call({
+								prefix,
+								fileAbsPath,
+								line,
+								character,
+								preview,
+								isIgnored,
+								commitHash,
+								author,
+							});
 							return {
 								prefix,
 								fileAbsPath,
