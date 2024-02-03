@@ -1,5 +1,7 @@
 import { execSync } from "child_process";
+import { appendFileSync } from "fs";
 import * as vscode from "vscode";
+import { log } from "../../logger";
 import { TodoList, TypedWorkspaceState } from "../../todoListProvider";
 import {
 	createMdFileName,
@@ -7,8 +9,6 @@ import {
 	getExtContext,
 	gitSetupAndCreateTodoList,
 } from "../testUtils";
-import { appendFileSync } from "fs";
-import { log } from "../../logger";
 
 const wsPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
 if (!wsPath) {
