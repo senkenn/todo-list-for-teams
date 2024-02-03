@@ -1,4 +1,4 @@
-import * as child_process from "child_process";
+import { execSync } from "child_process";
 import * as vscode from "vscode";
 import { log } from "./logger";
 import {
@@ -19,7 +19,7 @@ export function activate(
 
 	// If git is not installed, show error message with tree view
 	try {
-		child_process.execSync("git --version");
+		execSync("git --version");
 	} catch (error) {
 		console.warn((error as Buffer).toString());
 		vscode.window.createTreeView("todo-list-for-teams", {
@@ -30,7 +30,7 @@ export function activate(
 
 	// If git is not initialized, show error message with tree view
 	try {
-		child_process.execSync(`cd ${rootPath} && git status`);
+		execSync(`cd ${rootPath} && git status`);
 	} catch (error) {
 		console.warn((error as Buffer).toString());
 		vscode.window.createTreeView("todo-list-for-teams", {

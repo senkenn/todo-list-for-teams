@@ -1,4 +1,4 @@
-import * as child_process from "child_process";
+import { execSync } from "child_process";
 import * as vscode from "vscode";
 import { TypedWorkspaceState } from "../../todoListProvider";
 import {
@@ -14,12 +14,9 @@ describe("Git tests", () => {
 		throw new Error("wsPath is undefined");
 	}
 
-	beforeAll(() => {});
-
 	afterEach(() => {
 		// clean up
-		child_process.execSync(`rm -rf ${wsPath}/.git`);
-		child_process.execSync(`rm -f ${wsPath}/test*.md`);
+		execSync(`rm -rf ${wsPath}/.git ${wsPath}/test*.md`);
 	});
 
 	test("Should be create todo list with committed files", async () => {
@@ -37,7 +34,7 @@ describe("Git tests", () => {
 
 		// create file
 		const fileAbsPath = `${wsPath}/${createMdFileName()}`;
-		child_process.execSync(`touch ${fileAbsPath}`);
+		execSync(`touch ${fileAbsPath}`);
 
 		// open file and save
 		const document = await vscode.workspace.openTextDocument(fileAbsPath);
@@ -68,7 +65,7 @@ describe("Git tests", () => {
 		const expectedTodoList = gitSetupAndCreateExpectedTodoList(wsPath);
 
 		const fileAbsPath = `${wsPath}/${createMdFileNameWithSpace()}`;
-		child_process.execSync(`touch "${fileAbsPath}"`);
+		execSync(`touch "${fileAbsPath}"`);
 
 		// open file and save
 		const document = await vscode.workspace.openTextDocument(fileAbsPath);
@@ -101,7 +98,7 @@ describe("Git tests", () => {
 
 		const fileAbsPath = `${wsPath}/${createMdFileName()}`;
 		const fileAbsPath2 = `${wsPath}/${createMdFileNameWithSpace()}`;
-		child_process.execSync(`touch "${fileAbsPath}" "${fileAbsPath2}"`);
+		execSync(`touch "${fileAbsPath}" "${fileAbsPath2}"`);
 
 		// open file and save
 		const document = await vscode.workspace.openTextDocument(fileAbsPath);
@@ -129,8 +126,8 @@ describe("Git tests", () => {
 		const workspaceState = new TypedWorkspaceState(extContext.workspaceState);
 
 		// remove test file
-		child_process.execSync(`rm -f "${fileAbsPath}"`).toString();
-		child_process.execSync(`rm -f "${fileAbsPath2}"`).toString();
+		execSync(`rm -f "${fileAbsPath}"`).toString();
+		execSync(`rm -f "${fileAbsPath2}"`).toString();
 
 		// check todo list
 		expect(workspaceState.get("todoList")).toEqual([

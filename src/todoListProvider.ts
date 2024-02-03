@@ -1,4 +1,4 @@
-import * as child_process from "child_process";
+import { execSync } from "child_process";
 import * as vscode from "vscode";
 import { ShouldHaveBeenIncludedSearchWordError } from "./error";
 import { log } from "./logger";
@@ -106,16 +106,14 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 					?.get("todoList")
 					?.filter((todo) => todo.isIgnored) || [];
 
-		const grepTrackedFiles = child_process
-			.execSync(`
+		const grepTrackedFiles = execSync(`
 				cd ${this.workspaceRoot}
 				git grep -n -E ${searchWordShell.source} \
 				| while IFS=: read i j k; do \
 						/bin/echo -n "$i\t"
 						git annotate -L $j,$j "$i" | cat
 					done
-				`)
-			.toString();
+				`).toString();
 		const trackedTodoList: TodoList =
 			grepTrackedFiles === ""
 				? []
@@ -174,15 +172,13 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 							};
 						});
 
-		const grepResultUntrackedFiles = child_process
-			.execSync(`
+		const grepResultUntrackedFiles = execSync(`
 				cd ${this.workspaceRoot}
 				files=$(git ls-files --others --exclude-standard) # exclude directory
 				if [ -n "$files" ]; then
 					/bin/echo "$files" | xargs -I {} grep --with-filename -n -E ${searchWordShell.source} {}
 					fi
-				`)
-			.toString();
+				`).toString();
 		const untrackedTodoList: TodoList =
 			grepResultUntrackedFiles === ""
 				? []

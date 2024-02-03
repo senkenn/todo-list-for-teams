@@ -1,12 +1,16 @@
-import * as child_process from "child_process";
+import { execSync } from "child_process";
 import * as vscode from "vscode";
 import { TodoList } from "../todoListProvider";
 
 export function gitSetupAndCreateExpectedTodoList(wsPath: string): TodoList {
 	// git config
 	const author = "Test User";
-	child_process.execSync(
-		`cd ${wsPath} && git init && git config --local user.name "${author}" && git config --local user.email "you@example.com"`,
+	execSync(
+		`cd ${wsPath} && git init && \
+		 git config --global user.name "${author}" && \
+		 git config --global user.email "you@example.com" && \
+		 git config --global init.defaultBranch master && \
+		 git config --global safe.directory *`,
 	);
 
 	// git init and commit test.md
@@ -15,17 +19,14 @@ export function gitSetupAndCreateExpectedTodoList(wsPath: string): TodoList {
 <!-- FIXME: fixme -->
 <!-- NOTE: note -->`;
 	const commitFileName = "test.md";
-	child_process
-		.execSync(
-			`cd ${wsPath} && \
+	execSync(
+		`cd ${wsPath} && \
 			 touch ${commitFileName} && \
 			 echo "${commitFileContent}" > ${commitFileName} && \
 			 git add . && \
 			 git commit -m "init"`,
-		)
-		.toString();
-	const commitHash = child_process
-		.execSync(`cd ${wsPath} && git rev-parse --short=8 HEAD`)
+	).toString();
+	const commitHash = execSync(`cd ${wsPath} && git rev-parse --short=8 HEAD`)
 		.toString()
 		.trim();
 
