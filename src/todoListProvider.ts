@@ -15,8 +15,8 @@ export type TodoList = {
 	character: number;
 	preview: string;
 	isIgnored: boolean;
+	author: string;
 	commitHash?: string;
-	author?: string;
 }[];
 
 export type CommandOpenFile = {
@@ -202,6 +202,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 							const character = matchedWord.index;
 
 							return {
+								author: "Not Committed Yet",
 								prefix,
 								fileAbsPath: `${this.workspaceRoot}/${filePath}`,
 								line: Number(line),

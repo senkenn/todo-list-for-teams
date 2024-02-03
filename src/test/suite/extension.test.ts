@@ -1,26 +1,31 @@
 import { execSync } from "child_process";
 import * as vscode from "vscode";
-import { TypedWorkspaceState } from "../../todoListProvider";
+import { TodoList, TypedWorkspaceState } from "../../todoListProvider";
 import {
 	createMdFileName,
 	createMdFileNameWithSpace,
 	getExtContext,
-	gitSetupAndCreateExpectedTodoList,
+	gitSetupAndCreateTodoList,
 } from "../testUtils";
+import { appendFileSync } from "fs";
+import { log } from "../../logger";
+
+const wsPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+if (!wsPath) {
+	throw new Error("wsPath is undefined");
+}
+
+afterEach(async () => {
+	// clean up
+	execSync(`rm -rf ${wsPath}/.git ${wsPath}/test*.md`);
+	// const extContext = await getExtContext();
+	// const workspaceState = new TypedWorkspaceState(extContext.workspaceState);
+	// workspaceState.update("todoList", []);
+});
 
 describe("Git tests", () => {
-	const wsPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-	if (!wsPath) {
-		throw new Error("wsPath is undefined");
-	}
-
-	afterEach(() => {
-		// clean up
-		execSync(`rm -rf ${wsPath}/.git ${wsPath}/test*.md`);
-	});
-
 	test("Should be create todo list with committed files", async () => {
-		const expectedTodoList = gitSetupAndCreateExpectedTodoList(wsPath);
+		const expectedTodoList = gitSetupAndCreateTodoList(wsPath);
 		const extContext = await getExtContext();
 		await vscode.commands.executeCommand("todo-list-for-teams.refresh");
 
@@ -30,7 +35,7 @@ describe("Git tests", () => {
 	});
 
 	test("Created todo list with uncommitted files", async () => {
-		const expectedTodoList = gitSetupAndCreateExpectedTodoList(wsPath);
+		const expectedTodoList = gitSetupAndCreateTodoList(wsPath);
 
 		// create file
 		const fileAbsPath = `${wsPath}/${createMdFileName()}`;
@@ -51,6 +56,7 @@ describe("Git tests", () => {
 		expect(workspaceState.get("todoList")).toEqual([
 			...expectedTodoList,
 			{
+				author: "Not Committed Yet",
 				character: 5,
 				fileAbsPath,
 				isIgnored: false,
@@ -62,7 +68,7 @@ describe("Git tests", () => {
 	});
 
 	test("Created todo list with uncommitted files and space in file name", async () => {
-		const expectedTodoList = gitSetupAndCreateExpectedTodoList(wsPath);
+		const expectedTodoList = gitSetupAndCreateTodoList(wsPath);
 
 		const fileAbsPath = `${wsPath}/${createMdFileNameWithSpace()}`;
 		execSync(`touch "${fileAbsPath}"`);
@@ -83,6 +89,7 @@ describe("Git tests", () => {
 		expect(workspaceState.get("todoList")).toEqual([
 			...expectedTodoList,
 			{
+				author: "Not Committed Yet",
 				character: 5,
 				fileAbsPath,
 				isIgnored: false,
@@ -94,7 +101,7 @@ describe("Git tests", () => {
 	});
 
 	test("Created todo list with uncommitted files and multiple files", async () => {
-		const expectedTodoList = gitSetupAndCreateExpectedTodoList(wsPath);
+		const expectedTodoList = gitSetupAndCreateTodoList(wsPath);
 
 		const fileAbsPath = `${wsPath}/${createMdFileName()}`;
 		const fileAbsPath2 = `${wsPath}/${createMdFileNameWithSpace()}`;
@@ -133,6 +140,7 @@ describe("Git tests", () => {
 		expect(workspaceState.get("todoList")).toEqual([
 			...expectedTodoList,
 			{
+				author: "Not Committed Yet",
 				character: 6,
 				fileAbsPath: fileAbsPath2,
 				isIgnored: false,
@@ -141,12 +149,101 @@ describe("Git tests", () => {
 				preview: "HACK: test hack -->",
 			},
 			{
+				author: "Not Committed Yet",
 				character: 5,
 				fileAbsPath,
 				isIgnored: false,
 				line: 1,
 				prefix: "TODO",
 				preview: "TODO: test todo -->",
+			},
+		]);
+	});
+});
+
+describe("Command tests", () => {
+	test("refresh", async () => {
+		const todoList = gitSetupAndCreateTodoList(wsPath);
+
+		// append todo to test.md
+		appendFileSync(`${wsPath}/test.md`, "<!-- TODO: add todo -->");
+
+		const extContext = await getExtContext();
+		await vscode.commands.executeCommand("todo-list-for-teams.refresh");
+		const workspaceState = new TypedWorkspaceState(extContext.workspaceState);
+
+		expect(workspaceState.get("todoList")).toEqual([
+			...todoList,
+			{
+				author: "Not Committed Yet",
+				character: 5,
+				commitHash: undefined,
+				fileAbsPath: `${wsPath}/test.md`,
+				isIgnored: false,
+				line: 5,
+				prefix: "TODO",
+				preview: "TODO: add todo -->",
+			},
+		]);
+	});
+
+	test("addToIgnoreList", async () => {
+		const todoList = gitSetupAndCreateTodoList(wsPath);
+		const extContext = await getExtContext();
+		await vscode.commands.executeCommand(
+			"todo-list-for-teams.addToIgnoreList",
+			{
+				todoItemMetaData: {
+					fileAbsPath: `${wsPath}/test.md`,
+					line: 1,
+					character: 5,
+				},
+			},
+		);
+		await vscode.commands.executeCommand("todo-list-for-teams.refresh");
+		const workspaceState = new TypedWorkspaceState(extContext.workspaceState);
+
+		const commitHash = todoList[0].commitHash;
+		expect(workspaceState.get("todoList")).toEqual([
+			{
+				author: "Test User",
+				character: 5,
+				commitHash,
+				fileAbsPath: `${wsPath}/test.md`,
+				isIgnored: true,
+				line: 1,
+				prefix: "TODO",
+				preview: "TODO: todo -->",
+			},
+			{
+				author: "Test User",
+				character: 5,
+				commitHash,
+				fileAbsPath: `${wsPath}/test.md`,
+				isIgnored: false,
+				line: 2,
+				prefix: "HACK",
+				preview: "HACK: hack -->",
+			},
+			{
+				author: "Test User",
+				character: 5,
+				commitHash,
+				fileAbsPath: `${wsPath}/test.md`,
+				isIgnored: false,
+				line: 3,
+				prefix: "FIXME",
+				preview: "FIXME: fixme -->",
+			},
+			{
+				author: "Test User",
+				character: 5,
+				commitHash,
+				fileAbsPath: `${wsPath}/test.md`,
+				isIgnored: false,
+				line: 4,
+				prefix: "NOTE",
+				preview: "NOTE: note -->",
 			},
 		]);
 	});

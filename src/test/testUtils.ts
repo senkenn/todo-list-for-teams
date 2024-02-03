@@ -2,7 +2,7 @@ import { execSync } from "child_process";
 import * as vscode from "vscode";
 import { TodoList } from "../todoListProvider";
 
-export function gitSetupAndCreateExpectedTodoList(wsPath: string): TodoList {
+export function gitSetupAndCreateTodoList(wsPath: string): TodoList {
 	// git config
 	const author = "Test User";
 	execSync(
