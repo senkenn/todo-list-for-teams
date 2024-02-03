@@ -12,11 +12,8 @@ export async function run(
 
 	console.info(`Running Jest tests from ${projectRootPath}...`);
 
-	await runCLI({ config } as Config.Argv, [projectRootPath])
-		.then((jestCliCallResult) => {
-			reportTestResults(undefined, jestCliCallResult.results.numFailedTests);
-		})
-		.catch((errorCaughtByJestRunner) => {
-			reportTestResults(errorCaughtByJestRunner, 0);
-		});
+	const test = await runCLI({ config } as Config.Argv, [projectRootPath]);
+	if (test.results.numFailedTestSuites > 0) {
+		process.exit(1);
+	}
 }
