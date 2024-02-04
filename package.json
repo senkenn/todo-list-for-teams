@@ -11,8 +11,12 @@
 	"publisher": "SENKEN",
 	"displayName": "Todo List for Teams",
 	"description": "View Todo list of yours",
-	"categories": ["Other"],
-	"activationEvents": ["onStartupFinished"],
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onStartupFinished"
+	],
 	"main": "./out/extension.js",
 	"repository": {
 		"url": "https://github.com/senkenn/todo-list-for-teams"
@@ -91,6 +95,7 @@
 		"@biomejs/biome": "^1.4.1",
 		"@types/glob": "^8.1.0",
 		"@types/jest": "^29.5.11",
+		"@types/lodash": "^4.14.202",
 		"@types/node": "^18.0.0",
 		"@types/vscode": "^1.84.0",
 		"@vscode/test-electron": "^2.3.8",
@@ -98,6 +103,7 @@
 		"glob": "^10.3.10",
 		"jest": "^29.7.0",
 		"lefthook": "^1.5.3",
+		"lodash": "^4.17.21",
 		"ts-jest": "^29.1.2",
 		"ts-loader": "^9.5.1",
 		"ts-node": "^10.9.2",
