@@ -16,6 +16,7 @@ pre-commit:
       glob: "*.{js,ts,jsx,tsx,json,css,scss}"
       run: |
         npx biome check --apply {staged_files}
+        git add {staged_files}
     cspell:
       glob: "*"
       run: |
