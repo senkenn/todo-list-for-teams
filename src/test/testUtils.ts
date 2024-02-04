@@ -4,14 +4,10 @@ import { TodoList } from "../todoListProvider";
 
 export function gitSetupAndCreateTodoList(wsPath: string): TodoList {
 	// git config
-	const author = "Test User";
-	execSync(
-		`cd ${wsPath} && git init && \
-		 git config --global user.name "${author}" && \
-		 git config --global user.email "you@example.com" && \
-		 git config --global init.defaultBranch master && \
-		 git config --global safe.directory *`,
-	);
+	execSync(`cd ${wsPath} && git init`);
+	const author = execSync(`cd ${wsPath} && git config user.name`)
+		.toString()
+		.trim();
 
 	// git init and commit test.md
 	const commitFileContent = `<!-- TODO: todo -->

@@ -1,4 +1,5 @@
 import { execSync } from "child_process";
+import { isEqual } from "lodash";
 import * as vscode from "vscode";
 import { log } from "./logger";
 import {
@@ -129,7 +130,7 @@ export function activate(
 
 				// Update todo list to restore same todo item from ignore list
 				const updatedTodoList = todoList.map((todo) => {
-					if (todo === todoItem.todoItemMetaData) {
+					if (isEqual(todo, todoItem.todoItemMetaData)) {
 						return {
 							...todo,
 							isIgnored: false,

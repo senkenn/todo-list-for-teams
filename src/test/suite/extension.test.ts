@@ -18,9 +18,9 @@ if (!wsPath) {
 afterEach(async () => {
 	// clean up
 	execSync(`rm -rf ${wsPath}/.git ${wsPath}/test*.md`);
-	// const extContext = await getExtContext();
-	// const workspaceState = new TypedWorkspaceState(extContext.workspaceState);
-	// workspaceState.update("todoList", []);
+	const extContext = await getExtContext();
+	const workspaceState = new TypedWorkspaceState(extContext.workspaceState);
+	workspaceState.update("todoList", []);
 });
 
 describe("Git tests", () => {
@@ -189,108 +189,55 @@ describe("Command tests", () => {
 
 	test("addToIgnoreList", async () => {
 		const todoList = gitSetupAndCreateTodoList(wsPath);
-		const commitHash = todoList[0].commitHash;
 
-		const extContext = await getExtContext();
+		await vscode.commands.executeCommand("todo-list-for-teams.refresh");
 		await vscode.commands.executeCommand(
 			"todo-list-for-teams.addToIgnoreList",
 			{
-				todoItemMetaData: {
-					author: "Test User",
-					character: 5,
-					commitHash,
-					fileAbsPath: `${wsPath}/test.md`,
-					isIgnored: false,
-					line: 1,
-					prefix: "TODO",
-					preview: "TODO: todo -->",
-				},
+				todoItemMetaData: todoList[0],
 			},
 		);
 
+		const extContext = await getExtContext();
 		const workspaceState = new TypedWorkspaceState(extContext.workspaceState);
 		expect(workspaceState.get("todoList")).toEqual([
 			{
-				author: "Test User",
-				character: 5,
-				commitHash,
-				fileAbsPath: `${wsPath}/test.md`,
+				...todoList[0],
 				isIgnored: true,
-				line: 1,
-				prefix: "TODO",
-				preview: "TODO: todo -->",
 			},
 			...todoList.slice(1),
 		]);
 	});
 
-	// test("restoreItem", async () => {
-	// 	const todoList = gitSetupAndCreateTodoList(wsPath);
-	// 	const commitHash = todoList[0].commitHash;
+	test("restoreItem", async () => {
+		const todoList = gitSetupAndCreateTodoList(wsPath);
 
-	// 	const extContext = await getExtContext();
-	// 	const workspaceState = new TypedWorkspaceState(extContext.workspaceState);
+		await vscode.commands.executeCommand("todo-list-for-teams.refresh");
+		await vscode.commands.executeCommand(
+			"todo-list-for-teams.addToIgnoreList",
+			{
+				todoItemMetaData: todoList[0],
+			},
+		);
 
-	// 	const expectedTodoList: TodoList = [
-	// 		{
-	// 			author: "Test User",
-	// 			character: 5,
-	// 			commitHash,
-	// 			fileAbsPath: `${wsPath}/test.md`,
-	// 			isIgnored: true,
-	// 			line: 1,
-	// 			prefix: "TODO",
-	// 			preview: "TODO: todo -->",
-	// 		},
-	// 		{
-	// 			author: "Test User",
-	// 			character: 5,
-	// 			commitHash,
-	// 			fileAbsPath: `${wsPath}/test.md`,
-	// 			isIgnored: false,
-	// 			line: 2,
-	// 			prefix: "HACK",
-	// 			preview: "HACK: hack -->",
-	// 		},
-	// 		{
-	// 			author: "Test User",
-	// 			character: 5,
-	// 			commitHash,
-	// 			fileAbsPath: `${wsPath}/test.md`,
-	// 			isIgnored: false,
-	// 			line: 3,
-	// 			prefix: "FIXME",
-	// 			preview: "FIXME: fixme -->",
-	// 		},
-	// 		{
-	// 			author: "Test User",
-	// 			character: 5,
-	// 			commitHash,
-	// 			fileAbsPath: `${wsPath}/test.md`,
-	// 			isIgnored: false,
-	// 			line: 4,
-	// 			prefix: "NOTE",
-	// 			preview: "NOTE: note -->",
-	// 		},
-	// 	];
-	// 	// add to ignore list
-	// 	await vscode.commands.executeCommand(
-	// 		"todo-list-for-teams.addToIgnoreList",
-	// 		{
-	// 			todoItemMetaData: {
-	// 				author: "Test User",
-	// 				character: 5,
-	// 				commitHash,
-	// 				fileAbsPath: `${wsPath}/test.md`,
-	// 				isIgnored: false,
-	// 				line: 1,
-	// 				prefix: "TODO",
-	// 				preview: "TODO: todo -->",
-	// 			},
-	// 		},
-	// 	);
-	// 	expect();
+		const extContext = await getExtContext();
+		const workspaceState = new TypedWorkspaceState(extContext.workspaceState);
+		expect(workspaceState.get("todoList")).toEqual([
+			{
+				...todoList[0],
+				isIgnored: true,
+			},
+			...todoList.slice(1),
+		]);
 
-	// 	// restore item
-	// });
+		// restore item
+		await vscode.commands.executeCommand("todo-list-for-teams.restoreItem", {
+			todoItemMetaData: {
+				...todoList[0],
+				isIgnored: true,
+			},
+		});
+		await vscode.commands.executeCommand("todo-list-for-teams.refresh");
+		expect(workspaceState.get("todoList")).toEqual(todoList);
+	});
 });

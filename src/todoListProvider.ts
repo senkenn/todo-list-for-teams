@@ -133,11 +133,9 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 								lineStr,
 								fullPreview,
 							] = formattedOutput.split("\t");
-							log.call({ output, formattedOutput });
 							const fileAbsPath = `${this.workspaceRoot}/${filePath}`;
 							const line = Number(lineStr);
 							const matchedWord = fullPreview.match(searchWordTS);
-							log.call({ fullPreview, matchedWord });
 							if (matchedWord?.index === undefined) {
 								throw new ShouldHaveBeenIncludedSearchWordError(output);
 							}
@@ -186,11 +184,9 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 						.slice(0, -1) // cut last "\n"
 						.split("\n")
 						.map((output) => {
-							log.call({ output });
 							// Format: {filePath}:{line}:{fullPreview}
 							const [filePath, line, ...rest] = output.split(":");
 							const matchedWord = rest.join(":").match(searchWordTS);
-							log.call({ rest: rest.join(":") });
 							if (
 								matchedWord?.index === undefined ||
 								matchedWord.input === undefined
