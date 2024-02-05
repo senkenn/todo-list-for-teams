@@ -110,33 +110,71 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 				cd ${this.workspaceRoot}
 				git grep -n -E ${searchWordShell.source} \
 				| while IFS=: read i j k; do \
-						/bin/echo -n "$i\t"
-						git annotate -L $j,$j "$i" | cat
+						/bin/echo "filePath $i"
+						git blame -L $j,$j "$i" --porcelain
+						/bin/echo ""
 					done
 				`).toString();
+		log.call({ grepTrackedFiles });
+
 		const trackedTodoList: TodoList =
 			grepTrackedFiles === ""
 				? []
 				: grepTrackedFiles
-						.slice(0, -1) // cut last "\n"
-						.split("\n")
+						.slice(0, -2) // Remove trailing newline
+						.split("\n\n")
 						.map((output) => {
-							// Format: {filePath}  {commitHash}  ( {author} {date} {lineStr} )  {fullPreview}
-							const formattedOutput = output
-								.replace(/\(\s*/, "")
-								.replace(/\)/, "\t");
-							const [
-								filePath,
-								commitHashIncludingUncommitted,
-								author,
-								date,
-								lineStr,
-								fullPreview,
-							] = formattedOutput.split("\t");
-							const fileAbsPath = `${this.workspaceRoot}/${filePath}`;
-							const line = Number(lineStr);
+							// output is like:
+							// filePath src/test/suite/extension.test.ts
+							// c86dbc4aa3e590d61868dfb242c6bf7fdecc55fc 134 48 1
+							// author senkenn
+							// author-mail <senken32@gmail.com>
+							// author-time 1706716246
+							// author-tz +0900
+							// committer senkenn
+							// committer-mail <senken32@gmail.com>
+							// committer-time 1706716246
+							// committer-tz +0900
+							// summary Add support for Windows in CI workflow and update extension tests
+							// previous a7c0a2a6b40802b2ab46bdca59fe961f0a0f1525 src/test/suite/extension.test.ts
+							// filename src/test/suite/extension.test.ts
+							// 				editBuilder.insert(new vscode.Position(0, 0), "<!-- TODO: test todo -->");
+
+							const currentFilePathMatch = output.match(/filePath (.*)/);
+							const commitHashMatch = output.match(/([a-f0-9]{40}) \d+ \d+ \d/);
+							const currentLineMatch = output.match(
+								/[a-f0-9]{40} \d+ (\d+) \d/,
+							);
+							const authorMatch = output.match(/author (.*)/);
+							const fullPreview = output.split("\n").slice(-1)[0];
+							if (
+								!currentFilePathMatch ||
+								!commitHashMatch ||
+								!currentLineMatch ||
+								!authorMatch ||
+								!fullPreview
+							) {
+								log.call({
+									output,
+									currentFilePathMatch,
+									commitHashMatch,
+									currentLineMatch,
+									authorMatch,
+									fullPreview,
+								});
+								throw new ShouldHaveBeenIncludedSearchWordError(output);
+							}
+
+							const fileAbsPath = `${this.workspaceRoot}/${currentFilePathMatch[1]}`;
+							const commitHashIncludingUncommitted = commitHashMatch[1].slice(
+								0,
+								8,
+							);
+							const line = Number(currentLineMatch[1]);
+							const author = authorMatch[1];
 							const matchedWord = fullPreview.match(searchWordTS);
 							if (matchedWord?.index === undefined) {
+								log.call({ output, matchedWord });
 								throw new ShouldHaveBeenIncludedSearchWordError(output);
 							}
 							const prefix = this.getPrefix(matchedWord[0]);
@@ -191,7 +229,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 								matchedWord?.index === undefined ||
 								matchedWord.input === undefined
 							) {
-								console.log(matchedWord);
+								log.call({ output, matchedWord });
 								throw new ShouldHaveBeenIncludedSearchWordError(output);
 							}
 							const prefix = this.getPrefix(matchedWord[0]);
