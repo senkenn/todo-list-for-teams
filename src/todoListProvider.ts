@@ -115,7 +115,6 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 						/bin/echo ""
 					done
 				`).toString();
-		log.call({ grepTrackedFiles });
 
 		const trackedTodoList: TodoList =
 			grepTrackedFiles === ""
@@ -146,7 +145,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 								/[a-f0-9]{40} \d+ (\d+) \d/,
 							);
 							const authorMatch = output.match(/author (.*)/);
-							const fullPreview = output.split("\n").slice(-1)[0];
+							const fullPreview = output.split("\n").slice(-1)[0].trim();
 							if (
 								!currentFilePathMatch ||
 								!commitHashMatch ||
