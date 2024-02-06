@@ -98,14 +98,15 @@ export function activate(
 				if (!todoItem.todoItemMetaData) {
 					throw new Error("todoItemMetaData is undefined");
 				}
-				const { commitHash, fileAbsPath, line } = todoItem.todoItemMetaData;
+				const { commitHash, fileAbsPath, currentLine } =
+					todoItem.todoItemMetaData;
 
 				// Update todo list to ignore same todo item
 				const updatedTodoList = todoList.map((todo) => {
 					if (
 						todo.commitHash === commitHash &&
 						todo.fileAbsPath === fileAbsPath &&
-						todo.line === line
+						todo.currentLine === currentLine
 					) {
 						return {
 							...todo,

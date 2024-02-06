@@ -11,7 +11,8 @@ type Prefix = (typeof prefixes)[number];
 export type TodoList = {
 	prefix: Prefix;
 	fileAbsPath: string;
-	line: number;
+	currentLine: number;
+	committedLine?: number;
 	character: number;
 	preview: string;
 	isIgnored: boolean;
@@ -120,7 +121,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 			grepTrackedFiles === ""
 				? []
 				: grepTrackedFiles
-						.slice(0, -2) // Remove trailing newline
+						.slice(0, -2) // Remove last "\n\n"
 						.split("\n\n")
 						.map((output) => {
 							// output is like:
@@ -138,18 +139,26 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 							// previous a7c0a2a6b40802b2ab46bdca59fe961f0a0f1525 src/test/suite/extension.test.ts
 							// filename src/test/suite/extension.test.ts
 							// 				editBuilder.insert(new vscode.Position(0, 0), "<!-- TODO: test todo -->");
+							const outputLines = output.split("\n");
 
-							const currentFilePathMatch = output.match(/filePath (.*)/);
-							const commitHashMatch = output.match(/([a-f0-9]{40}) \d+ \d+ \d/);
-							const currentLineMatch = output.match(
+							const currentFilePathMatch =
+								outputLines[0].match(/filePath (.*)/);
+							const commitHashMatch = outputLines[1].match(
+								/([a-f0-9]{40}) \d+ \d+ \d/,
+							);
+							const currentLineMatch = outputLines[1].match(
 								/[a-f0-9]{40} \d+ (\d+) \d/,
 							);
-							const authorMatch = output.match(/author (.*)/);
-							const fullPreview = output.split("\n").slice(-1)[0].trim();
+							const committedLineMatch = outputLines[1].match(
+								/[a-f0-9]{40} (\d+) \d+ \d/,
+							);
+							const authorMatch = outputLines[2].match(/author (.*)/);
+							const fullPreview = outputLines.slice(-1)[0].slice(1);
 							if (
 								!currentFilePathMatch ||
 								!commitHashMatch ||
 								!currentLineMatch ||
+								!committedLineMatch ||
 								!authorMatch ||
 								!fullPreview
 							) {
@@ -169,7 +178,8 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 								0,
 								8,
 							);
-							const line = Number(currentLineMatch[1]);
+							const currentLine = Number(currentLineMatch[1]);
+							const committedLine = Number(committedLineMatch[1]);
 							const author = authorMatch[1];
 							const matchedWord = fullPreview.match(searchWordTS);
 							if (matchedWord?.index === undefined) {
@@ -192,13 +202,14 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 								(ignored) =>
 									ignored.commitHash === commitHash &&
 									ignored.fileAbsPath === fileAbsPath &&
-									ignored.line === line,
+									ignored.committedLine === committedLine,
 							);
 
 							return {
 								prefix,
 								fileAbsPath,
-								line,
+								currentLine,
+								committedLine,
 								character,
 								preview,
 								isIgnored,
@@ -238,7 +249,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 								author: "Not Committed Yet",
 								prefix,
 								fileAbsPath: `${this.workspaceRoot}/${filePath}`,
-								line: Number(line),
+								currentLine: Number(line),
 								character,
 								preview: matchedWord.input.slice(matchedWord.index),
 								isIgnored: false,
@@ -279,7 +290,7 @@ export class TodoTreeItem extends vscode.TreeItem {
 			  ? "committed-item"
 			  : "non-committed-item";
 
-		const { fileAbsPath, line, character } = todoItemMetaData;
+		const { fileAbsPath, currentLine: line, character } = todoItemMetaData;
 		const zeroBasedLine = line - 1;
 		this.command = {
 			command: "todo-list-for-teams.openFile",
