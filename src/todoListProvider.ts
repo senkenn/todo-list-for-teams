@@ -219,12 +219,17 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 						});
 
 		const grepResultUntrackedFiles = execSync(`
-				cd ${this.workspaceRoot}
-				files=$(git ls-files --others --exclude-standard) # exclude directory
-				if [ -n "$files" ]; then
-					/bin/echo "$files" | xargs -I {} grep --with-filename -n -E ${searchWordShell.source} {}
-					fi
-				`).toString();
+			cd ${this.workspaceRoot}
+			# IFS is used to split by newline
+			IFS='
+			'
+			files=$(git ls-files --others --exclude-standard) # exclude directory
+			for file in $files
+			do
+				grep --with-filename -n -E ${searchWordShell.source} "$file" \
+					|| [ $? -eq 1 ] # ignore if grep returns 1
+			done
+			`).toString();
 		const untrackedTodoList: TodoList =
 			grepResultUntrackedFiles === ""
 				? []

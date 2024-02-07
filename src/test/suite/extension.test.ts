@@ -114,6 +114,45 @@ afterEach(async () => {
 });
 
 describe("Git tests", () => {
+	test("Should be create todo list with no file", async () => {
+		// git config
+		execSync(`cd ${wsPath} && git init`);
+		const author = execSync(`cd ${wsPath} && git config user.name`)
+			.toString()
+			.trim();
+
+		const extContext = await getExtContext();
+		await vscode.commands.executeCommand("todo-list-for-teams.refresh");
+
+		const workspaceState = new TypedWorkspaceState(extContext.workspaceState);
+		expect(workspaceState.get("todoList")).toEqual([]);
+	});
+
+	test("Should be create todo list with committed files and no todo comments", async () => {
+		// git config
+		execSync(`cd ${wsPath} && git init`);
+		const author = execSync(`cd ${wsPath} && git config user.name`)
+			.toString()
+			.trim();
+
+		// git init and commit test.md
+		const commitFileContent = "";
+		const commitFileName = "test.md";
+		execSync(
+			`cd ${wsPath} && \
+				 touch ${commitFileName} && \
+				 echo "${commitFileContent}" > ${commitFileName} && \
+				 git add . && \
+				 git commit -m "init"`,
+		).toString();
+
+		const extContext = await getExtContext();
+		await vscode.commands.executeCommand("todo-list-for-teams.refresh");
+
+		const workspaceState = new TypedWorkspaceState(extContext.workspaceState);
+		expect(workspaceState.get("todoList")).toEqual([]);
+	});
+
 	test("Should be create todo list with committed files", async () => {
 		const expectedTodoList = gitSetupAndCreateTodoList(wsPath);
 		const extContext = await getExtContext();
