@@ -5,9 +5,8 @@ ignorePaths:
   - "*.svg"
 words:
   - biomejs
+  - esbuild
   - lefthook
-  - nosources
-  - objectname
   - quickstart
   - senken
   - senkenn
