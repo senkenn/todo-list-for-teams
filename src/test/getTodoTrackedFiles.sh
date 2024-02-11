@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# get rootPath
+# get workspace root path
 if [ -z "$1" ]; then
   echo "Usage: $0 <rootPath>"
   exit 1
