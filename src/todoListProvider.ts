@@ -107,7 +107,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 					?.filter((todo) => todo.isIgnored) || [];
 
 		const grepTrackedFiles = execSync(
-			`bash ./src/test/getTodoTrackedFiles.sh ${this.workspaceRoot}`,
+			`bash ./src/getTodoTrackedFiles.sh ${this.workspaceRoot}`,
 		).toString();
 
 		const trackedTodoList: TodoList =
@@ -212,7 +212,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 						});
 
 		const grepResultUntrackedFiles = execSync(
-			`bash ./src/test/getTodoUntrackedFiles.sh ${this.workspaceRoot}`,
+			`bash ./src/getTodoUntrackedFiles.sh ${this.workspaceRoot}`,
 		).toString();
 		const untrackedTodoList: TodoList =
 			grepResultUntrackedFiles === ""
