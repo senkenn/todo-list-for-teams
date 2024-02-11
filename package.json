@@ -1,6 +1,6 @@
 {
 	"name": "todo-list-for-teams",
-	"version": "0.0.7",
+	"version": "0.0.8",
 	"engines": {
 		"pnpm": "please_use_npm_instead",
 		"npm": ">=9.3.1",
