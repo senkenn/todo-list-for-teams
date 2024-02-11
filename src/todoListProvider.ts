@@ -3,8 +3,7 @@ import * as vscode from "vscode";
 import { ShouldHaveBeenIncludedSearchWordError } from "./error";
 import { log } from "./logger";
 
-const searchWordShell = /TODO:\|FIXME:\|HACK:\|NOTE:/;
-const searchWordTS = /TODO:|FIXME:|HACK:|NOTE:/;
+const searchWord = /TODO:|FIXME:|HACK:|NOTE:/;
 
 const prefixes = ["TODO", "FIXME", "HACK", "NOTE"] as const;
 type Prefix = (typeof prefixes)[number];
@@ -175,7 +174,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 							const currentLine = Number(currentLineMatch[1]);
 							const committedLine = Number(committedLineMatch[1]);
 							const author = authorMatch[1];
-							const matchedWord = fullPreview.match(searchWordTS);
+							const matchedWord = fullPreview.match(searchWord);
 							if (matchedWord?.index === undefined) {
 								log.call({ output, matchedWord });
 								throw new ShouldHaveBeenIncludedSearchWordError(output);
@@ -224,7 +223,7 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 						.map((output) => {
 							// Format: {filePath}:{line}:{fullPreview}
 							const [filePath, line, ...rest] = output.split(":");
-							const matchedWord = rest.join(":").match(searchWordTS);
+							const matchedWord = rest.join(":").match(searchWord);
 							if (
 								matchedWord?.index === undefined ||
 								matchedWord.input === undefined
