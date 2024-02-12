@@ -106,20 +106,16 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 					?.get("todoList")
 					?.filter((todo) => todo.isIgnored) || [];
 
-		const grepTrackedFiles = execSync(
-			`bash -c '
-				#!/bin/bash
+		const grepTrackedFiles = execSync(`bash -c '
+			cd "${this.workspaceRoot}"
 
-				cd "${this.workspaceRoot}"
-
-				git grep -n -E \"${searchWord.source}" \
-				| while IFS=: read -r i j _; do \
-						/bin/echo "filePath $i"
-						git blame -L "$j","$j" "$i" --porcelain
-						/bin/echo ""
-					done
-			'`,
-		).toString();
+			git grep -n -E \"${searchWord.source}" \
+			| while IFS=: read -r i j _; do \
+					/bin/echo "filePath $i"
+					git blame -L "$j","$j" "$i" --porcelain
+					/bin/echo ""
+				done
+			'`).toString();
 		const trackedTodoList: TodoList =
 			grepTrackedFiles === ""
 				? []
@@ -221,18 +217,17 @@ export class TodoListProvider implements vscode.TreeDataProvider<TodoTreeItem> {
 							};
 						});
 
-		const grepResultUntrackedFiles = execSync(`
-			bash -c '
-				cd "${this.workspaceRoot}"
+		const grepResultUntrackedFiles = execSync(`bash -c '
+			cd "${this.workspaceRoot}"
 
-				# IFS is used to split by newline
-				IFS=$"\n"
-				files=$(git ls-files --others --exclude-standard) # exclude directory
-				for file in $files
-				do
-					grep --with-filename -n -E "${searchWord.source}" "$file" \
-						|| [ $? -eq 1 ] # ignore if grep returns 1
-				done
+			# IFS is used to split by newline
+			IFS=$"\n"
+			files=$(git ls-files --others --exclude-standard) # exclude directory
+			for file in $files
+			do
+				grep --with-filename -n -E "${searchWord.source}" "$file" \
+					|| [ $? -eq 1 ] # ignore if grep returns 1
+			done
 			'`).toString();
 		const untrackedTodoList: TodoList =
 			grepResultUntrackedFiles === ""
